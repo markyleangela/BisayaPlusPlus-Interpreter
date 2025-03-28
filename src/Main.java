@@ -1,6 +1,8 @@
+import LexicalAnalyzer.Lexer;
+import LexicalAnalyzer.Token;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,14 +15,17 @@ public class Main {
 
             while (reader.hasNextLine()) {
                 String data = reader.nextLine();
-                Lexer lex = new Lexer();
-                List<Token> tokens = lex.lex(data);
-                System.out.println("Tokens: " + tokens);
+                Lexer lexer = new Lexer(data);
+                List<Token> tokens = lexer.scanTokens();
+                System.out.println("Tokens: ");
+                for (Token token : tokens) {
+                    System.out.println(token);
+                }
 
 
-                Parser parser = new Parser(tokens);
-                ASTNode ast = parser.parse();
-                System.out.println("AST: " + ast);
+//                Parser parser = new Parser(tokens);
+//                ASTNode ast = parser.parse();
+//                System.out.println("AST: " + ast);
             }
         }catch (FileNotFoundException e) {
             System.out.println("Error: " + e.getMessage());

@@ -1,3 +1,4 @@
+package LexicalAnalyzer;
 
 public enum TokenType {
     // Program
@@ -6,7 +7,7 @@ public enum TokenType {
     // Data Types : Keywords
     NUMERO, LETRA, TINUOD, TIPIK,
     // Keywords
-    MUGNA, IPAKITA, DAWAT, KUNG, PUNDOK, KUNG_KUNG_WALA,ALANG_SA,
+    MUGNA, IPAKITA, DAWAT, KUNG, PUNDOK, WALA,ALANG,SA,PRINT,INPUT,
 
     // Literals
     NUMBER, CHARACTER, STRING, BOOLEAN_LITERAL,FLOAT, IDENTIFIER, KEYWORD, EXPRESSION,
@@ -32,8 +33,8 @@ public enum TokenType {
 
     // Delimiters and Symbols
     LPAREN, RPAREN, AMPERSAND, DOLLAR,
-    LBRACKET, RBRACKET, ASSIGNMENT, SEMICOLON, COMMA,SEPARATOR,
-
+    LBRACKET, RBRACKET, ASSIGNMENT, SEMICOLON,COLON, COMMA,SEPARATOR,
+    LBRACE, RBRACE, CONCAT,NEXT_LINE,
     // Special
     COMMENT, EOF,
     UNKNOWN,START,END,
