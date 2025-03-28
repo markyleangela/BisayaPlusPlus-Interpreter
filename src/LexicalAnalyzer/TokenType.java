@@ -25,6 +25,9 @@ public enum TokenType {
     BOOL_TRUE, // "OO"
     BOOL_FALSE, // "DILI"
 
+    //literals
+    NULL,
+
 
     //Control Flow
     IF, ELSE_IF, ELSE , BLOCK,BLOCK_START, BLOCK_END, FOR,

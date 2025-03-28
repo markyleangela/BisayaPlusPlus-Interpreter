@@ -13,6 +13,19 @@ public class Token {
         this.line = line;
     }
 
+    public TokenType getTokenType(){
+        return type;
+    }
+    public String getLexeme(){
+        return lexeme;
+    }
+    public Object getLiteral(){
+        return literal;
+    }
+    public int getLine(){
+        return line;
+    }
+
     @Override
     public String toString() {
         return  "type:" + type + ", value: " + lexeme + ", literal: " + literal;

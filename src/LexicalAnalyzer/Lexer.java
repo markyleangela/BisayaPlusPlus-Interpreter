@@ -30,7 +30,7 @@ public class Lexer {
         keywords.put("KUNG",TokenType.IF);
         keywords.put("KUNG WALA",TokenType.ELSE);
         keywords.put("KUNG DILI",TokenType.ELSE_IF);
-        keywords.put("PUNDOK",TokenType.BLOCK_START);
+        keywords.put("PUNDOK",TokenType.BLOCK);
         keywords.put("DILI",TokenType.BOOL_FALSE);
         keywords.put("OO",TokenType.BOOL_TRUE);
         keywords.put("ALANG SA",TokenType.FOR);
