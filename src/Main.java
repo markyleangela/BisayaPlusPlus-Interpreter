@@ -1,5 +1,8 @@
 import LexicalAnalyzer.Lexer;
 import LexicalAnalyzer.Token;
+import SyntaxAnalyzer.AstPrinter;
+import SyntaxAnalyzer.Expr;
+import SyntaxAnalyzer.Parser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +23,15 @@ public class Main {
                 System.out.println("Tokens: ");
                 for (Token token : tokens) {
                     System.out.println(token);
+                }
+
+                Parser parser = new Parser(tokens);
+                Expr expression = parser.parse();
+
+                if (expression != null) {
+                    System.out.println("AST: " + new AstPrinter().print(expression));
+                } else {
+                    System.out.println("Parsing failed.");
                 }
 
 

@@ -19,7 +19,8 @@ public class Lexer {
 
     static {
         keywords = new HashMap<>();
-        keywords.put("MUGNA",TokenType.START);
+        keywords.put("MUGNA",TokenType.MUGNA);
+        keywords.put("SUGOD",TokenType.START);
         keywords.put("KATAPUSAN",TokenType.END);
         keywords.put("NUMERO",TokenType.NUMERO);
         keywords.put("TIPIK",TokenType.TIPIK);

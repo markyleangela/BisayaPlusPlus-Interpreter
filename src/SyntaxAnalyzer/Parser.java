@@ -10,12 +10,20 @@ public class Parser {
     private final List<Token> tokens;
     private int current = 0;
     private static class ParseError extends RuntimeException {}
-    Parser(List<Token> tokens) {
+    public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
     private Expr expression() {
         return equality();
+    }
+
+    public Expr parse() {
+        try {
+            return expression();
+        } catch (ParseError error) {
+            return null;
+        }
     }
 
     private Expr equality() {
