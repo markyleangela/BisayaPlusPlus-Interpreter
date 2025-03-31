@@ -11,6 +11,17 @@ public abstract class Expr {
 
     abstract <R> R accept(Visitor<R> visitor);
 
+    static class Variable extends Expr {
+        Variable(Token name) {
+            this.name = name;
+        }
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVariableExpr(this);
+        }
+        final Token name;
+    }
+
     static class Binary extends Expr {
         final Expr left;
         final Token operator;
@@ -68,4 +79,5 @@ public abstract class Expr {
             return visitor.visitUnaryExpr(this);
         }
     }
+
 }
