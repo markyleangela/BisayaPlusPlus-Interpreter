@@ -38,7 +38,7 @@ public class Parser {
 
     private Stmt printStatement() {
         Expr value = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
         return new Stmt.Print(value);
     }
 
@@ -55,7 +55,7 @@ public class Parser {
 
     private Stmt expressionStatement() {
         Expr expr = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+
         return new Stmt.Expression(expr);
     }
 
@@ -82,7 +82,7 @@ public class Parser {
         return expr;
     }
 
-    List<Stmt> parse() {
+    public List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(declaration());

@@ -1,9 +1,6 @@
 package LexicalAnalyzer;
 
-import SyntaxAnalyzer.AstPrinter;
-import SyntaxAnalyzer.Expr;
-import SyntaxAnalyzer.Interpreter;
-import SyntaxAnalyzer.Parser;
+import SyntaxAnalyzer.*;
 import Utils.RuntimeError;
 
 import java.io.BufferedReader;
@@ -51,19 +48,25 @@ public class Lox {
         }
     }
 
-    private static void run(String source){
+    private static void run(String source) {
         Lexer scanner = new Lexer(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
+
         List<Stmt> statements = parser.parse();
-//        Expr expression = parser.parse();
-// Stop if there was a syntax error.
+        // Stop if there was a syntax error.
         if (hadError) return;
+
+        // Print the parsed statements
+        AstPrinter printer = new AstPrinter();
+        for (Stmt statement : statements) {
+            System.out.println(printer.print(statement));
+        }
+
         interpreter.interpret(statements);
-//        System.out.println(new AstPrinter().print(expression));
-//        for(Token token: tokens){
-//            System.out.println(token);
-//        }
+        for (Token token : tokens) {
+            System.out.println(token);
+        }
     }
 
     static void error(int line, String message) {

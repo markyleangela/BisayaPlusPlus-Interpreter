@@ -1,60 +1,76 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package SyntaxAnalyzer;
 
-import java.util.List;
 import LexicalAnalyzer.Token;
-import SyntaxAnalyzer.Expr;
+import java.util.List;
 
-abstract class Stmt {
+public abstract class Stmt {
+    public Stmt() {
+    }
+
+    abstract <R> R accept(Visitor<R> var1);
+
+    static class Expression extends Stmt {
+        final Expr expression;
+
+        Expression(Expr expression) {
+            this.expression = expression;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitExpressionStmt(this);
+        }
+    }
+
+    static class Block extends Stmt {
+        final List<Stmt> statements;
+
+        Block(List<Stmt> statements) {
+            this.statements = statements;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlockStmt(this);
+        }
+    }
+
+    static class Print extends Stmt {
+        final Expr expression;
+
+        Print(Expr expression) {
+            this.expression = expression;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitPrintStmt(this);
+        }
+    }
+
+    static class Var extends Stmt {
+        final Token name;
+        final Expr initializer;
+
+        Var(Token name, Expr initializer) {
+            this.name = name;
+            this.initializer = initializer;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVarStmt(this);
+        }
+    }
+
     interface Visitor<R> {
-        R visitBlockStmt(Block stmt);
-        R visitClassStmt(Class stmt);
-        R visitExpressionStmt(Expr stmt);
-//        R visitFunctionStmt(Function stmt);
-//        R visitIfStmt(If stmt);
-        R visitPrintStmt(Print stmt);
-//        R visitReturnStmt(Return stmt);
-//        R visitVarStmt(Var stmt);
-//        R visitWhileStmt(While stmt);
+        R visitBlockStmt(Block var1);
+
+        R visitExpressionStmt(Expression var1);
+
+        R visitPrintStmt(Print var1);
+
+        R visitVarStmt(Var var1);
     }
-    // Nested Stmt classes here...
-    abstract <R> R accept(Visitor<R> visitor);
-}
-
-class Print extends Stmt {
-    Expr expression;
-
-    public Print(Expr expression) {
-        this.expression = expression;
-    }
-}
-
-class ExpressionStatement extends Stmt {
-    Expr expression;
-
-    public ExpressionStatement(Expr expression) {
-        this.expression = expression;
-    }
-}
-
-class VariableDeclaration extends Stmt {
-    List<Token> names;
-    Token type;
-    Expr initializer;
-
-    public VariableDeclaration(List<Token> names, Token type, Expr initializer) {
-        this.names = names;
-        this.type = type;
-        this.initializer = initializer;
-    }
-}
-
-class Block extends Stmt {
-    Block(List<Stmt> statements) {
-        this.statements = statements;
-    }
-    @Override
-    <R> R accept(Visitor<R> visitor) {
-        return visitor.visitBlockStmt(this);
-    }
-    final List<Stmt> statements;
 }

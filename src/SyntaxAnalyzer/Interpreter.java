@@ -41,7 +41,7 @@ public class Interpreter implements Expr.Visitor<Object>,
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
         }
-        environment.define(stmt.name.lexeme, value);
+        environment.define(stmt.name.getLexeme(), value);
         return null;
     }
 
@@ -188,5 +188,6 @@ public class Interpreter implements Expr.Visitor<Object>,
                 Environment(environment));
         return null;
     }
+
 
 }

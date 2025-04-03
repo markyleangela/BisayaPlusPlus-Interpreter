@@ -1,25 +1,28 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package SyntaxAnalyzer;
+
 import LexicalAnalyzer.Token;
 
 public abstract class Expr {
-    interface Visitor<R> {
-        R visitBinaryExpr(Binary expr);
-        R visitGroupingExpr(Grouping expr);
-        R visitLiteralExpr(Literal expr);
-        R visitUnaryExpr(Unary expr);
+    public Expr() {
     }
 
-    abstract <R> R accept(Visitor<R> visitor);
+    abstract <R> R accept(Visitor<R> var1);
 
     static class Variable extends Expr {
+        final Token name;
+
         Variable(Token name) {
             this.name = name;
         }
-        @Override
+
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariableExpr(this);
         }
-        final Token name;
     }
 
     static class Binary extends Expr {
@@ -33,7 +36,6 @@ public abstract class Expr {
             this.right = right;
         }
 
-        @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
         }
@@ -46,7 +48,6 @@ public abstract class Expr {
             this.expression = expression;
         }
 
-        @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitGroupingExpr(this);
         }
@@ -59,7 +60,6 @@ public abstract class Expr {
             this.value = value;
         }
 
-        @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitLiteralExpr(this);
         }
@@ -74,10 +74,36 @@ public abstract class Expr {
             this.right = right;
         }
 
-        @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpr(this);
         }
     }
 
+    static class Assign extends Expr {
+        final Token name;
+        final Expr value;
+
+        Assign(Token name, Expr value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignExpr(this);
+        }
+    }
+
+    interface Visitor<R> {
+        R visitBinaryExpr(Binary var1);
+
+        R visitGroupingExpr(Grouping var1);
+
+        R visitLiteralExpr(Literal var1);
+
+        R visitUnaryExpr(Unary var1);
+
+        R visitVariableExpr(Variable var1);
+
+        R visitAssignExpr(Assign var1);
+    }
 }

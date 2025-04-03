@@ -2,31 +2,73 @@ package SyntaxAnalyzer;
 
 import LexicalAnalyzer.Token;
 import LexicalAnalyzer.TokenType;
+import SyntaxAnalyzer.Expr;
 
-public class AstPrinter implements Expr.Visitor<String>{
-    public String print(Expr expr){
+public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
+    public String print(Expr expr) {
         return expr.accept(this);
+    }
+
+    public String print(Stmt stmt) {
+        return stmt.accept(this);
     }
 
     @Override
     public String visitBinaryExpr(Expr.Binary expr) {
-        return parenthesize(expr.operator.getLexeme(),
-                expr.left, expr.right);
+        return parenthesize(expr.operator.getLexeme(), expr.left, expr.right);
     }
+
     @Override
     public String visitGroupingExpr(Expr.Grouping expr) {
         return parenthesize("group", expr.expression);
     }
+
     @Override
     public String visitLiteralExpr(Expr.Literal expr) {
         if (expr.value == null) return "nil";
         return expr.value.toString();
     }
+
     @Override
     public String visitUnaryExpr(Expr.Unary expr) {
         return parenthesize(expr.operator.getLexeme(), expr.right);
     }
 
+    @Override
+    public String visitVariableExpr(Expr.Variable expr) {
+        return expr.name.getLexeme();
+    }
+
+    @Override
+    public String visitAssignExpr(Expr.Assign expr) {
+        return parenthesize("=", expr.name, expr.value);
+    }
+
+    @Override
+    public String visitExpressionStmt(Stmt.Expression stmt) {
+        return parenthesize(";", stmt.expression);
+    }
+
+    @Override
+    public String visitPrintStmt(Stmt.Print stmt) {
+        return parenthesize("print", stmt.expression);
+    }
+
+    @Override
+    public String visitVarStmt(Stmt.Var stmt) {
+        return parenthesize("var", stmt.name, stmt.initializer);
+    }
+
+    @Override
+    public String visitBlockStmt(Stmt.Block stmt) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(block");
+        for (Stmt statement : stmt.statements) {
+            builder.append(" ").append(statement.accept(this));
+        }
+        builder.append(")");
+        return builder.toString();
+    }
 
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
@@ -39,15 +81,12 @@ public class AstPrinter implements Expr.Visitor<String>{
         return builder.toString();
     }
 
-
-    public static void main(String[] args) {
-        Expr expression = new Expr.Binary(
-                new Expr.Unary(
-                        new Token(TokenType.MINUS, "-", null, 1),
-                        new Expr.Literal(123)),
-                new Token(TokenType.MULTIPLY, "*", null, 1),
-                new Expr.Grouping(
-                        new Expr.Literal(45.67)));
-        System.out.println(new AstPrinter().print(expression));
+    private String parenthesize(String name, Token token, Expr expr) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(").append(name);
+        builder.append(" ").append(token.getLexeme());
+        builder.append(" ").append(expr.accept(this));
+        builder.append(")");
+        return builder.toString();
     }
 }
