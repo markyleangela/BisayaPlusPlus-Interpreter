@@ -53,10 +53,12 @@ public abstract class Stmt {
     static class Var extends Stmt {
         final Token name;
         final Expr initializer;
+        final Token type;
 
-        Var(Token name, Expr initializer) {
+        Var(Token name, Expr initializer, Token type) {
             this.name = name;
             this.initializer = initializer;
+            this.type = type;
         }
 
         <R> R accept(Visitor<R> visitor) {
