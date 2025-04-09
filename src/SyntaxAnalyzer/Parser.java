@@ -5,6 +5,7 @@ import LexicalAnalyzer.Token;
 import LexicalAnalyzer.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import SyntaxAnalyzer.Stmt;
 
@@ -22,7 +23,13 @@ public class Parser {
 
     private Stmt declaration() {
         try {
-            if (match(TokenType.MUGNA)) return varDeclaration();
+            if (match(TokenType.MUGNA)) {
+                List<Stmt> declarations = varDeclaration();
+                if (declarations.size() == 1) {
+                    return declarations.get(0); // Return a single Var if only one variable
+                }
+                throw new ParseError(); // Handle multiple declarations elsewhere if needed
+            }
             return statement();
         } catch (ParseError error) {
             synchronize();
@@ -31,6 +38,7 @@ public class Parser {
     }
 
     private Stmt statement() {
+        if (match(TokenType.IF)) return ifStatement();
         if (match(TokenType.PRINT)) return printStatement();
         if (match(TokenType.LBRACE)) return new Stmt.Block(block());
         return expressionStatement();
@@ -42,14 +50,52 @@ public class Parser {
         return new Stmt.Print(value);
     }
 
-    private Stmt varDeclaration() {
-        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
-        Token type = consume(TokenType.NUMERO, "Expect variable type."); // to be fixed
-        Expr initializer = null;
-        if (match(TokenType.ASSIGNMENT)) {
-            initializer = expression();
+    private Stmt ifStatement() {
+        consume(TokenType.LPAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        consume(TokenType.RPAREN, "Expect ')' after if condition.");
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(TokenType.ELSE)) {
+
+            elseBranch = statement();
         }
-        return new Stmt.Var(name, initializer, type);
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+//    private Stmt varDeclaration() {
+//        Token type = consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TIPIK, TokenType.TINUOD);
+//        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+//
+//        Expr initializer = null;
+//        if (match(TokenType.ASSIGNMENT)) {
+//            initializer = expression();
+//        }
+//        return new Stmt.Var(name, initializer, type);
+//    }
+
+    private List<Stmt> varDeclaration() {
+        // Consume the type (e.g., NUMERO, LETRA, etc.)
+        Token type = consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TIPIK, TokenType.TINUOD);
+
+        // List to store all variable declarations
+        List<Stmt> declarations = new ArrayList<>();
+
+        do {
+            // Consume the variable name
+            Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+            // Check for an optional initializer
+            Expr initializer = null;
+            if (match(TokenType.ASSIGNMENT)) {
+                initializer = expression();
+            }
+
+            // Add the variable declaration to the list
+            declarations.add(new Stmt.Var(name, initializer, type));
+        } while (match(TokenType.COMMA)); // Continue if there's a comma
+
+        return declarations;
     }
 
     private Stmt expressionStatement() {
@@ -191,6 +237,13 @@ public class Parser {
     private Token consume(TokenType type, String message) {
         if (check(type)) return advance();
         throw this.error(this.peek(), message);
+    }
+
+    private Token consume(TokenType... types) {
+        for (TokenType type : types) {
+            if (check(type)) return advance();
+        }
+        throw this.error(peek(), "Expect one of " + Arrays.toString(types));
     }
 
 

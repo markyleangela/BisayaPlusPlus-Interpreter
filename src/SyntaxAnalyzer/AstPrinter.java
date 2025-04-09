@@ -70,6 +70,18 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         return builder.toString();
     }
 
+    @Override
+    public String visitIfStmt(Stmt.If stmt) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(if ").append(stmt.condition.accept(this));
+        builder.append(" ").append(stmt.thenBranch.accept(this));
+        if (stmt.elseBranch != null) {
+            builder.append(" else ").append(stmt.elseBranch.accept(this));
+        }
+        builder.append(")");
+        return builder.toString();
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
         builder.append("(").append(name);

@@ -29,8 +29,19 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
+        return null;
+    }
+
+    @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
         Object value = evaluate(stmt.expression);
+
         System.out.println(stringify(value));
         return null;
     }
@@ -41,6 +52,7 @@ public class Interpreter implements Expr.Visitor<Object>,
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
         }
+        System.out.println("Defining variable: " + stmt.name.getLexeme() + " with value: " + value);
         environment.define(stmt.name.getLexeme(), value);
         return null;
     }
@@ -68,6 +80,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
+        System.out.println("Retrieving variable: " + expr.name.getLexeme());
+
         return environment.get(expr.name);
     }
 
@@ -169,11 +183,10 @@ public class Interpreter implements Expr.Visitor<Object>,
         stmt.accept(this);
     }
 
-    void executeBlock(List<Stmt> statements,
-                      Environment environment) {
+    public void executeBlock(List<Stmt> statements, Environment blockEnvironment) {
         Environment previous = this.environment;
         try {
-            this.environment = environment;
+            this.environment = blockEnvironment;
             for (Stmt statement : statements) {
                 execute(statement);
             }
@@ -184,8 +197,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, new
-                Environment(environment));
+        executeBlock(stmt.statements, new Environment(environment));
         return null;
     }
 

@@ -1,4 +1,4 @@
-package SyntaxAnalyzer;
+package Tools;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,7 +24,9 @@ public class GenerateAst {
         defineAst(outputDir, "Stmt", Arrays.asList(
                 "Block : List<Stmt> statements",
                 "Expression : Expr expression",
-                "Print : Expr expression"
+                "Print : Expr expression",
+                "If : Expr condition, Stmt thenBranch," +
+                        " Stmt elseBranch"
         ));
     }
 
