@@ -46,16 +46,34 @@ public class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+
+
+
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
+        // Evaluate the initializer expression
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
         }
-        System.out.println("Defining variable: " + stmt.name.getLexeme() + " with value: " + value);
+
+        // Define the variable in the environment
         environment.define(stmt.name.getLexeme(), value);
+
         return null;
     }
+
+    @Override
+    public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
+        for (Stmt.Var var : stmt.variables) {
+            Object value = evaluate(var.initializer);  // Evaluate the initializer
+            environment.define(var.name.getLexeme(), value);  // Define in the current environment
+        }
+        return null;
+    }
+
+
+
 
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
@@ -81,9 +99,9 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
         System.out.println("Retrieving variable: " + expr.name.getLexeme());
-
-        return environment.get(expr.name);
+        return environment.get(expr.name);  // This should now correctly retrieve the value.
     }
+
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;

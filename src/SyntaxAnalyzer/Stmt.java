@@ -14,6 +14,21 @@ public abstract class Stmt {
 
     abstract <R> R accept(Visitor<R> var1);
 
+    static class VarDeclaration extends Stmt {
+        final List<Stmt.Var> variables;
+
+        public VarDeclaration(List<Stmt.Var> variables) {
+            this.variables = variables;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVarDeclaration(this);
+        }
+    }
+
+
+
     static class Expression extends Stmt {
         final Expr expression;
 
@@ -90,5 +105,6 @@ public abstract class Stmt {
 
         R visitVarStmt(Var var1);
         R visitIfStmt(If stmt);
+        R visitVarDeclaration(VarDeclaration stmt);
     }
 }
