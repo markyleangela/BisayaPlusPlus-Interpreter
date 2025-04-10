@@ -82,6 +82,19 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         return builder.toString();
     }
 
+    @Override
+    public String visitVarDeclaration(Stmt.VarDeclaration stmt) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(varDeclaration");
+        for (Stmt.Var var : stmt.variables) {
+            builder.append(" ");
+            builder.append(parenthesize("var", var.name, var.initializer));
+        }
+        builder.append(")");
+        return builder.toString();
+    }
+
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
         builder.append("(").append(name);

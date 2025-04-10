@@ -23,7 +23,8 @@ public enum TokenType {
 
     // Boolean literals
     BOOL_TRUE, // "OO"
-    BOOL_FALSE, // "DILI"
+    BOOL_FALSE,
+    BOOL_LITERAL,// "DILI"
 
     //literals
     NULL,
@@ -37,7 +38,7 @@ public enum TokenType {
     // Delimiters and Symbols
     LPAREN, RPAREN, AMPERSAND, DOLLAR,
     LBRACKET, RBRACKET, ASSIGNMENT, SEMICOLON,COLON, COMMA,SEPARATOR,
-    LBRACE, RBRACE, CONCAT,NEXT_LINE,
+    LBRACE, RBRACE, CONCAT,NEXT_LINE,ESCAPE_HASH,
     // Special
     COMMENT, EOF,
     UNKNOWN,START,END,

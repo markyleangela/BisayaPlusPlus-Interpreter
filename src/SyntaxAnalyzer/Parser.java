@@ -24,22 +24,25 @@ public class Parser {
     private Stmt declaration() {
         try {
             if (match(TokenType.MUGNA)) {
-                List<Stmt> declarations = varDeclaration();
-                if (declarations.size() == 1) {
-                    return declarations.get(0); // Return a single Var if only one variable
-                }
-                throw new ParseError(); // Handle multiple declarations elsewhere if needed
+                return varDeclaration(); // Handle variable declaration first
             }
-            return statement();
+            return statement(); // If not variable declaration, treat as a statement
         } catch (ParseError error) {
             synchronize();
             return null;
         }
     }
 
+
+
+
     private Stmt statement() {
         if (match(TokenType.IF)) return ifStatement();
-        if (match(TokenType.PRINT)) return printStatement();
+        if (match(TokenType.PRINT)){
+            consume(TokenType.COLON, "Expect ':' after print statement.");
+            return printStatement();
+        }
+
         if (match(TokenType.LBRACE)) return new Stmt.Block(block());
         return expressionStatement();
     }
@@ -49,6 +52,7 @@ public class Parser {
 
         return new Stmt.Print(value);
     }
+
 
     private Stmt ifStatement() {
         consume(TokenType.LPAREN, "Expect '(' after 'if'.");
@@ -74,35 +78,33 @@ public class Parser {
 //        return new Stmt.Var(name, initializer, type);
 //    }
 
-    private List<Stmt> varDeclaration() {
-        // Consume the type (e.g., NUMERO, LETRA, etc.)
-        Token type = consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TIPIK, TokenType.TINUOD);
+    private Stmt varDeclaration() {
+        consume(TokenType.NUMERO, "Expect type for variable declaration.");
+        Token type = previous();  // Capture the type (NUMERO)
+        List<Stmt.Var> vars = new ArrayList<>();
 
-        // List to store all variable declarations
-        List<Stmt> declarations = new ArrayList<>();
-
+        // Parse multiple variables separated by commas
         do {
-            // Consume the variable name
             Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+            consume(TokenType.ASSIGNMENT, "Expect '=' after variable name.");
+            Expr initializer = expression();  // Expression for the initializer (like 10 or 20)
 
-            // Check for an optional initializer
-            Expr initializer = null;
-            if (match(TokenType.ASSIGNMENT)) {
-                initializer = expression();
-            }
+            vars.add(new Stmt.Var(name, initializer, type));  // Add each variable declaration
 
-            // Add the variable declaration to the list
-            declarations.add(new Stmt.Var(name, initializer, type));
-        } while (match(TokenType.COMMA)); // Continue if there's a comma
+        } while (match(TokenType.COMMA));  // Continue parsing if there are more variables
 
-        return declarations;
+        return new Stmt.VarDeclaration(vars);  // Return a block of multiple Stmt.Var
     }
+
+
+
 
     private Stmt expressionStatement() {
         Expr expr = expression();
 
         return new Stmt.Expression(expr);
     }
+
 
     private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
@@ -130,10 +132,14 @@ public class Parser {
     public List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(declaration());
+            Stmt decl = declaration();
+            if (decl != null) {
+                statements.add(decl);
+            }
         }
         return statements;
     }
+
 
 
 

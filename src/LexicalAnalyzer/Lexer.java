@@ -63,13 +63,19 @@ public class Lexer {
             case ',': addToken(TokenType.COMMA);break;
 //            case '-': addToken(TokenType.MINUS);break; // this has to be handled differently because comments starts with --
 
-            case '[': addToken(TokenType.LBRACKET);break;
-            case ']': addToken(TokenType.RBRACKET);break;
+            case '[':
+                if (match('#') && match(']')) {
+                    addToken(TokenType.ESCAPE_HASH); // Add ESCAPE_HASH to your TokenType
+                } else {
+                    addToken(TokenType.LBRACKET);
+                }
+                break;
+
             case '&': addToken(TokenType.CONCAT);break;
             case '$': addToken(TokenType.NEXT_LINE);break;
             case ':': addToken(TokenType.COLON);break;
             case '*': addToken(TokenType.MULTIPLY);break;
-            case '%': addToken(TokenType.MULTIPLY);break;
+            case '%': addToken(TokenType.MODULO);break;
             case '+': addToken(TokenType.PLUS);break;
             case '/': addToken(TokenType.DIVIDE);break;
             case '=': addToken(match('=')? TokenType.EQUALS : TokenType.ASSIGNMENT);break;
@@ -158,6 +164,13 @@ public class Lexer {
         advance();
 
         String value = source.substring(start + 1, current - 1);
+        if (value.equals("OO") || value.equals("DILI")) {
+            addToken(TokenType.BOOL_LITERAL, value);
+        } else {
+            addToken(TokenType.STRING, value);
+            return;
+        }
+
         addToken(TokenType.STRING, value);
     }
 
