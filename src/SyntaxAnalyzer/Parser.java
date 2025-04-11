@@ -195,7 +195,7 @@ public class Parser {
 
     private Expr term() {
         Expr expr = factor();
-        while (match(TokenType.MINUS, TokenType.PLUS)) {
+        while (match(TokenType.MINUS, TokenType.PLUS, TokenType.CONCAT, TokenType.NEXT_LINE)) {
             Token operator = previous();
             Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
