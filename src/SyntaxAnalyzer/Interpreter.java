@@ -181,6 +181,7 @@ public class Interpreter implements Expr.Visitor<Object>,
             case NOT_EQUALS: return !isEqual(left, right);
             case EQUALS: return isEqual(left, right);
             case CONCAT:return stringify(left) + stringify(right);
+            case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
         }
 // Unreachable.
         return null;
