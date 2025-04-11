@@ -38,11 +38,43 @@ public class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+//    @Override
+//    public Void visitPrintStmt(Stmt.Print stmt) {
+//        Object value = evaluate(stmt.expression);
+//
+//        System.out.println(stringify(value));
+//        return null;
+//    }
+
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
+        // Evaluate the expression and split by the concatenator (&)
         Object value = evaluate(stmt.expression);
+        String[] parts = stringify(value).split("&");
 
-        System.out.println(stringify(value));
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            // Handle escape codes within square braces
+            if (part.contains("[")) {
+                part = part.replace("[#]", "#"); // Example: Replace [#] with #
+            }
+
+            // Handle new line ($)
+            if (part.contains("$")) {
+                String[] subParts = part.split("\\$");
+                for (int i = 0; i < subParts.length; i++) {
+                    result.append(subParts[i]);
+                    if (i < subParts.length - 1) {
+                        result.append("\n"); // Add a new line for each $
+                    }
+                }
+            } else {
+                result.append(part);
+            }
+        }
+
+        // Print the final result
+        System.out.println(result.toString());
         return null;
     }
 
@@ -148,6 +180,7 @@ public class Interpreter implements Expr.Visitor<Object>,
                 return (double)left <= (double)right;
             case NOT_EQUALS: return !isEqual(left, right);
             case EQUALS: return isEqual(left, right);
+            case CONCAT:return stringify(left) + stringify(right);
         }
 // Unreachable.
         return null;
