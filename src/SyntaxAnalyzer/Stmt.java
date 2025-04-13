@@ -65,6 +65,18 @@ public abstract class Stmt {
         }
     }
 
+    static class Sugod extends Stmt {
+        final List<Stmt> statements;
+        Sugod(List<Stmt> statements) {
+            this.statements = statements;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitSugodStmt(this);
+        }
+    }
+
     static class Var extends Stmt {
         final Token name;
         final Expr initializer;
@@ -106,5 +118,6 @@ public abstract class Stmt {
         R visitVarStmt(Var var1);
         R visitIfStmt(If stmt);
         R visitVarDeclaration(VarDeclaration stmt);
+        R visitSugodStmt(Sugod stmt);
     }
 }

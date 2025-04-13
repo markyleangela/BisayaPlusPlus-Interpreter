@@ -164,9 +164,11 @@ public class Lexer {
         advance();
 
         String value = source.substring(start + 1, current - 1);
-        if (value.equals("OO") || value.equals("DILI")) {
-            addToken(TokenType.BOOL_LITERAL, value);
-        } else {
+        if (value.equals("OO")) {
+            addToken(TokenType.BOOL_TRUE, value);
+        } else if(value.equals("DILI")){
+            addToken(TokenType.BOOL_FALSE, value);
+        }else {
             addToken(TokenType.STRING, value);
             return;
         }

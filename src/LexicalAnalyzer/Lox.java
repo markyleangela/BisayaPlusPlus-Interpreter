@@ -4,6 +4,7 @@ import SyntaxAnalyzer.*;
 import Utils.RuntimeError;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -34,19 +35,35 @@ public class Lox {
         if(hadError) System.exit(65);
         if (hadRuntimeError) System.exit(70);
     }
+//
+//    private static void runPrompt() throws IOException{
+//        InputStreamReader input = new InputStreamReader(System.in);
+//        BufferedReader reader = new BufferedReader(input);
+//
+//        for(;;){
+//            System.out.print("> ");
+//            String line = reader.readLine();
+//            if(line == null) break;
+//            run(line);
+//            hadError=false;
+//        }
+//    }
 
-    private static void runPrompt() throws IOException{
-        InputStreamReader input = new InputStreamReader(System.in);
-        BufferedReader reader = new BufferedReader(input);
+    private static void runPrompt() throws IOException {
+        // Read the entire file content as a single string
+        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Test.txt"));
+        StringBuilder sourceBuilder = new StringBuilder();
 
-        for(;;){
-            System.out.print("> ");
-            String line = reader.readLine();
-            if(line == null) break;
-            run(line);
-            hadError=false;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sourceBuilder.append(line).append("\n"); // Append each line with a newline
         }
+        reader.close();
+
+        // Pass the entire source to the Lexer
+        run(sourceBuilder.toString());
     }
+
 
     private static void run(String source) {
         Lexer scanner = new Lexer(source);
@@ -58,10 +75,10 @@ public class Lox {
         if (hadError) return;
 
         // Print the parsed statements
-        AstPrinter printer = new AstPrinter();
-        for (Stmt statement : statements) {
-            System.out.println(printer.print(statement));
-        }
+//        AstPrinter printer = new AstPrinter();
+//        for (Stmt statement : statements) {
+//            System.out.println(printer.print(statement));
+//        }
 
         interpreter.interpret(statements);
         for (Token token : tokens) {
