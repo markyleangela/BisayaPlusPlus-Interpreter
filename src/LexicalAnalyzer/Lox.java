@@ -4,6 +4,7 @@ import SyntaxAnalyzer.*;
 import Utils.RuntimeError;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -34,19 +35,34 @@ public class Lox {
         if(hadError) System.exit(65);
         if (hadRuntimeError) System.exit(70);
     }
+//
+//    private static void runPrompt() throws IOException{
+//        InputStreamReader input = new InputStreamReader(System.in);
+//        BufferedReader reader = new BufferedReader(input);
+//
+//        for(;;){
+//            System.out.print("> ");
+//            String line = reader.readLine();
+//            if(line == null) break;
+//            run(line);
+//            hadError=false;
+//        }
+//    }
 
-    private static void runPrompt() throws IOException{
-        InputStreamReader input = new InputStreamReader(System.in);
-        BufferedReader reader = new BufferedReader(input);
+    private static void runPrompt() throws IOException {
+        // Change "input.txt" to your actual file path if needed
+        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Test.txt"));
 
-        for(;;){
-            System.out.print("> ");
-            String line = reader.readLine();
-            if(line == null) break;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            System.out.println("> " + line); // Optional: simulate prompt output
             run(line);
-            hadError=false;
+            hadError = false;
         }
+
+        reader.close(); // Close the file reader when done
     }
+
 
     private static void run(String source) {
         Lexer scanner = new Lexer(source);

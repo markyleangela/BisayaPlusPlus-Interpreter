@@ -168,18 +168,42 @@ public class Interpreter implements Expr.Visitor<Object>,
                         "Operands must be two numbers or two strings.");
             case GREATER_THAN:
                 checkNumberOperands(expr.operator, left, right);
-                return (double)left > (double)right;
+                if((double)left > (double)right){
+                    return "OO";
+                }
+                return "DILI";
             case GREATER_EQUAL:
                 checkNumberOperands(expr.operator, left, right);
-                return (double)left >= (double)right;
+                if((double)left >= (double)right){
+                    return "OO";
+                }
+                return "DILI";
+
             case LESS_THAN:
                 checkNumberOperands(expr.operator, left, right);
-                return (double)left < (double)right;
+                if((double)left < (double)right){
+                    return "OO";
+                }
+                return "DILI";
+
             case LESS_EQUAL:
                 checkNumberOperands(expr.operator, left, right);
-                return (double)left <= (double)right;
-            case NOT_EQUALS: return !isEqual(left, right);
-            case EQUALS: return isEqual(left, right);
+                if((double)left <= (double)right){
+                    return "OO";
+                }
+                return "DILI";
+
+            case NOT_EQUALS:
+                if(!isEqual(left, right)){
+                    return "OO";
+                }
+                return "DILI";
+
+            case EQUALS:
+                if(isEqual(left, right)){
+                    return "OO";
+                }
+                return "DILI";
             case CONCAT:return stringify(left) + stringify(right);
             case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
         }

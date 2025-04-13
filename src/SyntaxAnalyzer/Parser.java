@@ -79,13 +79,17 @@ public class Parser {
 //    }
 
     private Stmt varDeclaration() {
-        consume(TokenType.NUMERO, "Expect type for variable declaration.");
+        consume(TokenType.NUMERO,TokenType.LETRA,TokenType.TINUOD, TokenType.TIPIK);
         Token type = previous();  // Capture the type (NUMERO)
         List<Stmt.Var> vars = new ArrayList<>();
 
         // Parse multiple variables separated by commas
         do {
             Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+            if (check(TokenType.COMMA)){
+                vars.add(new Stmt.Var(name, null, type));  // Add variable without initializer
+                continue;
+            }
             consume(TokenType.ASSIGNMENT, "Expect '=' after variable name.");
             Expr initializer = expression();  // Expression for the initializer (like 10 or 20)
 
@@ -223,8 +227,8 @@ public class Parser {
     }
 
     private Expr primary() {
-        if (match(TokenType.BOOL_FALSE)) return new Expr.Literal(false);
-        if (match(TokenType.BOOL_TRUE)) return new Expr.Literal(true);
+        if (match(TokenType.BOOL_FALSE)) return new Expr.Literal("DILI");
+        if (match(TokenType.BOOL_TRUE)) return new Expr.Literal("OO");
         if (match(TokenType.NULL)) return new Expr.Literal(null);
         if (match(TokenType.NUMBER, TokenType.STRING)) {
             return new Expr.Literal(previous().getLiteral());
