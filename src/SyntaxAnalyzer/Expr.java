@@ -93,6 +93,30 @@ public abstract class Expr {
         }
     }
 
+    static class Escape extends Expr {
+        final Token content;
+
+        Escape(Token content) {
+            this.content = content;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitEscapeExpr(this);
+        }
+    }
+
+    static class NewLine extends Expr {
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitNewLineExpr(this);
+        }
+    }
+
+
+
+
+
     interface Visitor<R> {
         R visitBinaryExpr(Binary var1);
 
@@ -105,5 +129,8 @@ public abstract class Expr {
         R visitVariableExpr(Variable var1);
 
         R visitAssignExpr(Assign var1);
+
+        R visitEscapeExpr(Escape var1);
+        R visitNewLineExpr(NewLine var1);
     }
 }

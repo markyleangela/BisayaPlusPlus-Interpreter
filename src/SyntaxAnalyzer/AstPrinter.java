@@ -49,10 +49,35 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         return parenthesize(";", stmt.expression);
     }
 
+//    @Override
+//    public String visitPrintStmt(Stmt.Print stmt) {
+//        return parenthesize("print", stmt.expression);
+//    }
+        @Override
+        public String visitPrintStmt(Stmt.Print stmt) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("(print");
+
+            for (Expr expr : stmt.values) {
+                builder.append(" ");
+                builder.append(expr.accept(this)); // this will call the correct visit method
+            }
+
+            builder.append(")");
+            return builder.toString();
+        }
+
+
     @Override
-    public String visitPrintStmt(Stmt.Print stmt) {
-        return parenthesize("print", stmt.expression);
+    public String visitEscapeExpr(Expr.Escape expr) {
+        return "[[" + expr.content.getLexeme() + "]]"; // or just expr.content.lexeme if you prefer
     }
+
+    @Override
+    public String visitNewLineExpr(Expr.NewLine expr) {
+        return "\\n"; // or any representation of newline
+    }
+
 
     @Override
     public String visitVarStmt(Stmt.Var stmt) {

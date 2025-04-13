@@ -1,6 +1,7 @@
 package SyntaxAnalyzer;
 import java.util.List;
 import LexicalAnalyzer.Token;
+import LexicalAnalyzer.TokenType;
 import Utils.RuntimeError;
 import LexicalAnalyzer.Lox;
 
@@ -46,37 +47,80 @@ public class Interpreter implements Expr.Visitor<Object>,
 //        return null;
 //    }
 
+//    @Override
+//    public Void visitPrintStmt(Stmt.Print stmt) {
+//        for (Expr value : stmt.values) {
+//            Object evaluated = evaluate(value);
+//            System.out.print(stringify(evaluated));
+//        }
+//        System.out.println(); // add final newline
+//        return null;
+//    }
+
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
-        // Evaluate the expression and split by the concatenator (&)
-        Object value = evaluate(stmt.expression);
-        String[] parts = stringify(value).split("&");
-
-        StringBuilder result = new StringBuilder();
-        for (String part : parts) {
-            // Handle escape codes within square braces
-            if (part.contains("[")) {
-                part = part.replace("[#]", "#"); // Example: Replace [#] with #
-            }
-
-            // Handle new line ($)
-            if (part.contains("$")) {
-                String[] subParts = part.split("\\$");
-                for (int i = 0; i < subParts.length; i++) {
-                    result.append(subParts[i]);
-                    if (i < subParts.length - 1) {
-                        result.append("\n"); // Add a new line for each $
-                    }
-                }
-            } else {
-                result.append(part);
+        for (Expr value : stmt.values) {
+            if (value instanceof Expr.NewLine) {
+                System.out.println("\n");
+            } else if (value instanceof Expr.Escape) {
+                Expr.Escape escape = (Expr.Escape) value;
+                System.out.print("[" + escape.content.getLexeme() + "]");
+            }else {
+                Object evaluated = evaluate(value);
+                System.out.print(stringify(evaluated)); // `stringify(null)` will safely print "nil"
             }
         }
-
-        // Print the final result
-        System.out.println(result.toString());
+        System.out.println(); // Final newline
         return null;
     }
+
+
+
+    @Override
+    public Object visitEscapeExpr(Expr.Escape expr) {
+        // Example: [red] -> ANSI or custom code
+        return "[" + expr.content.getLexeme() + "]";
+    }
+
+    @Override
+    public Object visitNewLineExpr(Expr.NewLine expr) {
+        return "\n";
+    }
+
+
+
+
+//    @Override
+//    public Void visitPrintStmt(Stmt.Print stmt) {
+//        // Evaluate the expression and split by the concatenator (&)
+//        Object value = evaluate(stmt.expression);
+//        String[] parts = stringify(value).split("&");
+//
+//        StringBuilder result = new StringBuilder();
+//        for (String part : parts) {
+//            // Handle escape codes within square braces
+//            if (part.contains("[")) {
+//                part = part.replace("[#]", "#"); // Example: Replace [#] with #
+//            }
+//
+//            // Handle new line ($)
+//            if (part.contains("$")) {
+//                String[] subParts = part.split("\\$");
+//                for (int i = 0; i < subParts.length; i++) {
+//                    result.append(subParts[i]);
+//                    if (i < subParts.length - 1) {
+//                        result.append("\n"); // Add a new line for each $
+//                    }
+//                }
+//            } else {
+//                result.append(part);
+//            }
+//        }
+//
+//        // Print the final result
+//        System.out.println(result.toString());
+//        return null;
+//    }
 
 
 
@@ -180,12 +224,31 @@ public class Interpreter implements Expr.Visitor<Object>,
                 return (double)left <= (double)right;
             case NOT_EQUALS: return !isEqual(left, right);
             case EQUALS: return isEqual(left, right);
-            case CONCAT:return stringify(left) + stringify(right);
-            case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
+//            case CONCAT:
+//                return stringify(left) + stringify(right);
+//            case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
         }
 // Unreachable.
         return null;
     }
+
+
+    private void checkConcatOperands(Token operator, Object left, Object right) {
+        // Replace $ with \n for left and right operands
+        if (left instanceof String && left.equals("$")) {
+            left = "\n";
+        }
+        if (right instanceof String && right.equals("$")) {
+            right = "\n";
+        }
+
+        // Check if both operands are strings
+        if (left instanceof String && right instanceof String) return;
+
+        throw new RuntimeError(operator,
+                "Operands must be two strings.");
+    }
+
 
     private boolean isEqual(Object a, Object b) {
         if (a == null && b == null) return true;

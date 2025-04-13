@@ -47,11 +47,78 @@ public class Parser {
         return expressionStatement();
     }
 
-    private Stmt printStatement() {
-        Expr value = expression();
+//    private Stmt printStatement() {
+//        Expr value = expression();
+//
+//        return new Stmt.Print(value);
+//    }
 
-        return new Stmt.Print(value);
+    private Stmt printStatement() {
+        List<Expr> values = new ArrayList<>();
+        System.out.println("I PASSED HERE");
+
+
+
+        do {
+            if (match(TokenType.NEXT_LINE)) {
+                values.add(new Expr.NewLine());
+            } else if (match(TokenType.LBRACKET)) {
+                Token content = consume(TokenType.IDENTIFIER, "Expect escape code inside [].");
+                consume(TokenType.RBRACKET, "Expect ']' after escape code.");
+                values.add(new Expr.Escape(content));
+            } else {
+                values.add(printItem());
+            }
+        } while (match(TokenType.CONCAT)); // keep collecting while there is '&'
+
+        AstPrinter printer = new AstPrinter();
+        for (Expr value : values) {
+            System.out.println("This is the value: " + printer.print(value));
+        }
+        System.out.println("count of values: " + values.size());
+
+        return new Stmt.Print(values);
     }
+
+    private Expr printItem() {
+        Token token = advance();
+
+        switch (token.getTokenType()) {
+            case NUMBER:
+            case STRING:
+            case IDENTIFIER:
+            case PLUS:
+            case MINUS:
+            case MULTIPLY:
+            case MODULO:
+            case DIVIDE:
+            case EQUALS:
+                return new Expr.Literal(token.getLiteral() != null ? token.getLiteral() : token.getLexeme()); // just print token
+            default:
+                throw error(token, "Unexpected token in print statement.");
+        }
+    }
+
+
+
+
+
+    private Expr printExpression() {
+        if (match(TokenType.LBRACKET)) {
+            Token escapeContent = consume(TokenType.IDENTIFIER, "Expect escape code inside [].");
+            consume(TokenType.RBRACKET, "Expect ']' after escape code.");
+            return new Expr.Escape(escapeContent);
+        }
+
+        return expression(); // fall back to your regular expression parsing
+    }
+
+
+
+
+
+
+
 
 
     private Stmt ifStatement() {
@@ -197,6 +264,8 @@ public class Parser {
         Expr expr = factor();
         while (match(TokenType.MINUS, TokenType.PLUS, TokenType.CONCAT, TokenType.NEXT_LINE)) {
             Token operator = previous();
+
+
             Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
         }
@@ -237,6 +306,9 @@ public class Parser {
         if (match(TokenType.IDENTIFIER)) {
             return new Expr.Variable(previous());
         }
+
+
+
         throw this.error(this.peek(), "Expect expression.");
     }
 

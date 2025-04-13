@@ -53,17 +53,36 @@ public abstract class Stmt {
         }
     }
 
-    static class Print extends Stmt {
-        final Expr expression;
+//    static class Print extends Stmt {
+//        final Expr expression;
+//
+//        Print(Expr expression) {
+//            this.expression = expression;
+//        }
+//
+//
+//
+//
+//        <R> R accept(Visitor<R> visitor) {
+//            return visitor.visitPrintStmt(this);
+//        }
+//    }
 
-        Print(Expr expression) {
-            this.expression = expression;
+    static class Print extends Stmt {
+        final List<Expr> values;
+
+        Print(List<Expr> values) {
+            this.values = values;
         }
 
+        @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitPrintStmt(this);
         }
     }
+
+
+
 
     static class Var extends Stmt {
         final Token name;
