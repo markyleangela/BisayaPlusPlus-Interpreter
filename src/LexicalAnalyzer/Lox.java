@@ -74,10 +74,10 @@ public class Lox {
         if (hadError) return;
 
         // Print the parsed statements
-        AstPrinter printer = new AstPrinter();
-        for (Stmt statement : statements) {
-            System.out.println(printer.print(statement));
-        }
+//        AstPrinter printer = new AstPrinter();
+//        for (Stmt statement : statements) {
+//            System.out.println(printer.print(statement));
+//        }
 
         interpreter.interpret(statements);
         for (Token token : tokens) {

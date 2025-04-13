@@ -211,6 +211,13 @@ public class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+    @Override
+    public Void visitSugodStmt(Stmt.Sugod stmt) {
+
+        executeBlock(stmt.statements, environment);
+        return null;
+    }
+
     private boolean isEqual(Object a, Object b) {
         if (a == null && b == null) return true;
         if (a == null) return false;

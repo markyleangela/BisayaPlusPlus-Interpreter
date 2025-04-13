@@ -133,15 +133,29 @@ public class Parser {
         return expr;
     }
 
-    public List<Stmt> parse() {
+    public List<Stmt> parse(){
         List<Stmt> statements = new ArrayList<>();
-        while (!isAtEnd()) {
-            Stmt decl = declaration();
-            if (decl != null) {
-                statements.add(decl);
-            }
+        if(!peek().getLexeme().equals("SUGOD")){
+            throw error(peek(),"Kailangan sugod sugod");
+        }
+
+        statements.add(sugodStatement());
+
+        if(!isAtEnd()){
+            throw error(peek(),"kailagna way human katapusan");
         }
         return statements;
+
+    }
+
+    private Stmt sugodStatement(){
+        consume(TokenType.START, "Dapat magsugod ang program gamit ang 'SUGOD'");
+        List<Stmt> statements = new ArrayList<>();
+        while(!peek().getLexeme().equals("KATAPUSAN") && !isAtEnd()){
+            statements.add(declaration());
+        }
+        consume(TokenType.END, "Kailangan naay 'KATAPUSAN' sa katapusan sa program");
+        return new Stmt.Sugod(statements);
     }
 
 
