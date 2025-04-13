@@ -50,17 +50,18 @@ public class Lox {
 //    }
 
     private static void runPrompt() throws IOException {
-        // Change "input.txt" to your actual file path if needed
+        // Read the entire file content as a single string
         BufferedReader reader = new BufferedReader(new FileReader("src/Test/Test.txt"));
+        StringBuilder sourceBuilder = new StringBuilder();
 
         String line;
         while ((line = reader.readLine()) != null) {
-            System.out.println("> " + line); // Optional: simulate prompt output
-            run(line);
-            hadError = false;
+            sourceBuilder.append(line).append("\n"); // Append each line with a newline
         }
+        reader.close();
 
-        reader.close(); // Close the file reader when done
+        // Pass the entire source to the Lexer
+        run(sourceBuilder.toString());
     }
 
 
