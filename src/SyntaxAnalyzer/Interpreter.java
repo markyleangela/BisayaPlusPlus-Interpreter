@@ -1,6 +1,7 @@
 package SyntaxAnalyzer;
 import java.util.List;
 import LexicalAnalyzer.Token;
+import LexicalAnalyzer.TokenType;
 import Utils.RuntimeError;
 import LexicalAnalyzer.Lox;
 
@@ -29,6 +30,17 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left);
+        if (expr.operator.getTokenType() == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+        return evaluate(expr.right);
+    }
+
+    @Override
     public Void visitIfStmt(Stmt.If stmt) {
         if (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.thenBranch);
@@ -38,45 +50,45 @@ public class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
-//    @Override
-//    public Void visitPrintStmt(Stmt.Print stmt) {
-//        Object value = evaluate(stmt.expression);
-//
-//        System.out.println(stringify(value));
-//        return null;
-//    }
-
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
-        // Evaluate the expression and split by the concatenator (&)
         Object value = evaluate(stmt.expression);
-        String[] parts = stringify(value).split("&");
 
-        StringBuilder result = new StringBuilder();
-        for (String part : parts) {
-            // Handle escape codes within square braces
-            if (part.contains("[")) {
-                part = part.replace("[#]", "#"); // Example: Replace [#] with #
-            }
-
-            // Handle new line ($)
-            if (part.contains("$")) {
-                String[] subParts = part.split("\\$");
-                for (int i = 0; i < subParts.length; i++) {
-                    result.append(subParts[i]);
-                    if (i < subParts.length - 1) {
-                        result.append("\n"); // Add a new line for each $
-                    }
-                }
-            } else {
-                result.append(part);
-            }
-        }
-
-        // Print the final result
-        System.out.println(result.toString());
+        System.out.println(stringify(value));
         return null;
     }
+
+//    @Override
+//    public Void visitPrintStmt(Stmt.Print stmt) {
+//        // Evaluate the expression and split by the concatenator (&)
+//        Object value = evaluate(stmt.expression);
+//        String[] parts = stringify(value).split("&");
+//
+//        StringBuilder result = new StringBuilder();
+//        for (String part : parts) {
+//            // Handle escape codes within square braces
+//            if (part.contains("[")) {
+//                part = part.replace("[#]", "#"); // Example: Replace [#] with #
+//            }
+//
+//            // Handle new line ($)
+//            if (part.contains("$")) {
+//                String[] subParts = part.split("\\$");
+//                for (int i = 0; i < subParts.length; i++) {
+//                    result.append(subParts[i]);
+//                    if (i < subParts.length - 1) {
+//                        result.append("\n"); // Add a new line for each $
+//                    }
+//                }
+//            } else {
+//                result.append(part);
+//            }
+//        }
+//
+//        // Print the final result
+//        System.out.println(result.toString());
+//        return null;
+//    }
 
 
 
