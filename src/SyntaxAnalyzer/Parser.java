@@ -265,7 +265,7 @@ public class Parser {
         if (match(TokenType.BOOL_FALSE)) return new Expr.Literal("DILI");
         if (match(TokenType.BOOL_TRUE)) return new Expr.Literal("OO");
         if (match(TokenType.NULL)) return new Expr.Literal(null);
-        if (match(TokenType.NUMBER, TokenType.STRING)) {
+        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.CHARACTER)) {
             return new Expr.Literal(previous().getLiteral());
         }
         if (match(TokenType.LPAREN)) {

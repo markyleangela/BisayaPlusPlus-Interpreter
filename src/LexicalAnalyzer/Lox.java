@@ -51,7 +51,7 @@ public class Lox {
 
     private static void runPrompt() throws IOException {
         // Read the entire file content as a single string
-        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Logical.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Variables.txt"));
         StringBuilder sourceBuilder = new StringBuilder();
 
         String line;

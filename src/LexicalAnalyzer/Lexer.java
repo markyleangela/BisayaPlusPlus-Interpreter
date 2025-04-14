@@ -104,6 +104,7 @@ public class Lexer {
                 line++;
                 break;
             case '"': string();  break;
+            case '\'': character();  break;
             default:
                 if(isDigit(val)){
                     number();
@@ -175,6 +176,32 @@ public class Lexer {
 
         addToken(TokenType.STRING, value);
     }
+
+    private void character() {
+        if (isAtEnd()) {
+            Lox.error(line, "Unclosed character literal.");
+            return;
+        }
+
+        char c = advance(); // Get the character inside the single quote
+
+        // Check for escape characters like '\n'
+        if (c == '\\' && !isAtEnd()) {
+            c = advance(); // Advance to get the actual escaped character
+        }
+
+        if (peek() != '\'') {
+            Lox.error(line, "Unclosed or invalid character literal.");
+            return;
+        }
+
+        advance(); // Consume the closing single quote
+
+        // You can add a validation here for more than one character if needed
+
+        addToken(TokenType.CHARACTER, String.valueOf(c));
+    }
+
 
     private boolean isDigit(char c){
         return c >= '0' && c <= '9';
