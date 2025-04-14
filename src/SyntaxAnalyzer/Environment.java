@@ -42,4 +42,8 @@ public class Environment {
         throw new RuntimeError(name,
                 "Undefined variable '" + name.getLexeme() + "'.");
     }
+
+    boolean containsKey(String name) {
+        return values.containsKey(name);
+    }
 }
