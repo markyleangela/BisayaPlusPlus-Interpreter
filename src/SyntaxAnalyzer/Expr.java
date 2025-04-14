@@ -21,6 +21,10 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
+
             return visitor.visitVariableExpr(this);
         }
     }
@@ -37,6 +41,10 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
+
             return visitor.visitBinaryExpr(this);
         }
     }
@@ -49,6 +57,10 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
             return visitor.visitGroupingExpr(this);
         }
     }
@@ -61,6 +73,10 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
+
             return visitor.visitLiteralExpr(this);
         }
     }
@@ -75,6 +91,9 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
             return visitor.visitUnaryExpr(this);
         }
     }
@@ -89,6 +108,9 @@ public abstract class Expr {
         }
 
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
             return visitor.visitAssignExpr(this);
         }
     }
@@ -101,6 +123,10 @@ public abstract class Expr {
         }
         @Override
         <R> R accept(Visitor<R> visitor) {
+            if (visitor == null) {
+                return null; // or handle null as needed
+            }
+
             return visitor.visitLogicalExpr(this);
         }
         final Expr left;

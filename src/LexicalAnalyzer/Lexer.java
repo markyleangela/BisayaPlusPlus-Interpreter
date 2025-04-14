@@ -63,13 +63,7 @@ public class Lexer {
             case ',': addToken(TokenType.COMMA);break;
 //            case '-': addToken(TokenType.MINUS);break; // this has to be handled differently because comments starts with --
 
-            case '[':
-                if (match('#') && match(']')) {
-                    addToken(TokenType.ESCAPE_HASH); // Add ESCAPE_HASH to your TokenType
-                } else {
-                    addToken(TokenType.LBRACKET);
-                }
-                break;
+            case '[': escapecode(); break;
 
             case '&': addToken(TokenType.CONCAT);break;
             case '$': addToken(TokenType.NEXT_LINE);break;
@@ -198,9 +192,39 @@ public class Lexer {
         advance(); // Consume the closing single quote
 
         // You can add a validation here for more than one character if needed
+        if (c == '\0') {
+            Lox.error(line, "Invalid character literal.");
+            return;
+        }
 
         addToken(TokenType.CHARACTER, String.valueOf(c));
     }
+
+    private void escapecode() {
+        int bracketStart = current; // Position after '['
+
+        // Scan until we hit a closing bracket or the end
+        while (peek() != ']' && !isAtEnd()) {
+            advance();
+        }
+
+        if (isAtEnd()) {
+            Lox.error(line, "Unclosed escape code. Expected ']'.");
+            return;
+        }
+
+        advance(); // Consume closing ']'
+
+        String value = source.substring(bracketStart, current - 1);
+
+        if (value.isEmpty()) {
+            Lox.error(line, "Empty brackets [] are not allowed.");
+            return;
+        }
+
+        addToken(TokenType.ESCAPE_CODE, value); // or whatever token type you want
+    }
+
 
 
     private boolean isDigit(char c){

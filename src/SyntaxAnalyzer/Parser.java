@@ -276,8 +276,26 @@ public class Parser {
         if (match(TokenType.IDENTIFIER)) {
             return new Expr.Variable(previous());
         }
+        if (match(TokenType.ESCAPE_CODE)) {
+            String value = previous().getLiteral().toString();
+            System.out.println("This is the value: "+ value);
+            // If the value inside [ ] is a valid identifier, treat it as a variable.
+            if (isIdentifier(value)) {
+                return new Expr.Variable(new Token(TokenType.IDENTIFIER, value, value, previous().getLine()));
+            }
+
+            // Otherwise, treat it as a literal string.
+            return new Expr.Literal(previous().getLiteral());
+        }
+
         throw this.error(this.peek(), "Expect expression.");
     }
+
+    private boolean isIdentifier(String value) {
+        // Check if it follows identifier rules (e.g., letters, digits, underscores, but doesn't start with digit)
+        return value.matches("[a-zA-Z_][a-zA-Z0-9_]*");
+    }
+
 
     private Token consume(TokenType type, String message) {
         if (check(type)) return advance();

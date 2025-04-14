@@ -14,12 +14,19 @@ public class Interpreter implements Expr.Visitor<Object>,
         return expr.value;
     }
 
+
+
     @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
 
     private Object evaluate(Expr expr) {
+        if (expr == null) {
+            // Handle null expression case, maybe return a default value or throw a more descriptive error
+            return null;
+        }
+
         return expr.accept(this);
     }
 
