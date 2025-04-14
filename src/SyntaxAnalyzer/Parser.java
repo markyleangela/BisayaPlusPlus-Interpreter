@@ -278,10 +278,17 @@ public class Parser {
         }
         if (match(TokenType.ESCAPE_CODE)) {
             String value = previous().getLiteral().toString();
-            System.out.println("This is the value: "+ value);
+
+
+
             // If the value inside [ ] is a valid identifier, treat it as a variable.
             if (isIdentifier(value)) {
                 return new Expr.Variable(new Token(TokenType.IDENTIFIER, value, value, previous().getLine()));
+            }
+            if ((value.startsWith("\"") && value.endsWith("\"")) ||
+                    (value.startsWith("'") && value.endsWith("'"))) {
+                value = value.substring(1, value.length() - 1);
+                return new Expr.Literal(value);
             }
 
             // Otherwise, treat it as a literal string.
