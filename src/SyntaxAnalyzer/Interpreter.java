@@ -1,5 +1,7 @@
 package SyntaxAnalyzer;
 import java.util.List;
+import java.util.Scanner;
+
 import LexicalAnalyzer.Token;
 import LexicalAnalyzer.TokenType;
 import Utils.RuntimeError;
@@ -64,6 +66,26 @@ public class Interpreter implements Expr.Visitor<Object>,
         System.out.println(stringify(value));
         return null;
     }
+
+
+
+    @Override
+    public Void visitInputStmt(Stmt.Input inputStmt) {
+        for (Token varName : inputStmt.getVariableNames()) {
+            System.out.println("Enter value for " + varName.getLexeme() + ": ");
+            Scanner scanner = new Scanner(System.in);
+            String inputValue = scanner.nextLine();
+
+            // Store the input value in the environment
+            environment.define(varName.getLexeme(), inputValue);
+
+            // Optionally, display the result
+            System.out.println("Assigned value " + inputValue + " to variable " + varName.getLexeme());
+        }
+
+        return null;
+    }
+
 
 //    @Override
 //    public Void visitPrintStmt(Stmt.Print stmt) {

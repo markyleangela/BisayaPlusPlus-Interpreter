@@ -51,7 +51,7 @@ public class Lox {
 
     private static void runPrompt() throws IOException {
         // Read the entire file content as a single string
-        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Test1.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Dawat.txt"));
         StringBuilder sourceBuilder = new StringBuilder();
 
         String line;
@@ -84,6 +84,12 @@ public class Lox {
         for (Token token : tokens) {
             System.out.println(token);
         }
+    }
+
+    public static String getInput() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter input: ");
+        return scanner.nextLine();
     }
 
     static void error(int line, String message) {
