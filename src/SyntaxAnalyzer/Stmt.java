@@ -65,6 +65,22 @@ public abstract class Stmt {
         }
     }
 
+    static class Input extends Stmt {
+        private final List<Token> variableNames;
+
+        Input(List<Token> variableNames) {
+            this.variableNames = variableNames;
+        }
+
+        public List<Token> getVariableNames() {
+            return variableNames;
+        }
+
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitInputStmt(this);
+        }
+    }
+
     static class Sugod extends Stmt {
         final List<Stmt> statements;
         Sugod(List<Stmt> statements) {
@@ -119,5 +135,6 @@ public abstract class Stmt {
         R visitIfStmt(If stmt);
         R visitVarDeclaration(VarDeclaration stmt);
         R visitSugodStmt(Sugod stmt);
+        R visitInputStmt(Input stmt);
     }
 }
