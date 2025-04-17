@@ -321,6 +321,8 @@ public class Parser {
             return new Expr.Literal(previous().getLiteral());
         }
 
+        if (match(TokenType.NEXT_LINE)) return new Expr.Literal('\n');
+
         throw this.error(this.peek(), "Expect expression.");
     }
 
