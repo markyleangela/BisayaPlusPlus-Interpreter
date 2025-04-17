@@ -6,16 +6,18 @@
 package SyntaxAnalyzer;
 
 import LexicalAnalyzer.Token;
+import LexicalAnalyzer.TokenType;
+
 import java.util.List;
 
 public abstract class Stmt {
     public Stmt() {
     }
 
-    abstract <R> R accept(Visitor<R> var1);
+    public abstract <R> R accept(Visitor<R> var1);
 
-    static class VarDeclaration extends Stmt {
-        final List<Stmt.Var> variables;
+    public static class VarDeclaration extends Stmt {
+        public final List<Stmt.Var> variables;
 
         public VarDeclaration(List<Stmt.Var> variables) {
             this.variables = variables;
@@ -29,46 +31,46 @@ public abstract class Stmt {
 
 
 
-    static class Expression extends Stmt {
-        final Expr expression;
+    public static class Expression extends Stmt {
+        public final Expr expression;
 
-        Expression(Expr expression) {
+        public Expression(Expr expression) {
             this.expression = expression;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitExpressionStmt(this);
         }
     }
 
-    static class Block extends Stmt {
-        final List<Stmt> statements;
+    public static class Block extends Stmt {
+        public final List<Stmt> statements;
 
         Block(List<Stmt> statements) {
             this.statements = statements;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBlockStmt(this);
         }
     }
 
-    static class Print extends Stmt {
-        final Expr expression;
+    public static class Print extends Stmt {
+        public final Expr expression;
 
         Print(Expr expression) {
             this.expression = expression;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitPrintStmt(this);
         }
     }
 
-    static class Input extends Stmt {
+    public static class Input extends Stmt {
         private final List<Token> variableNames;
 
-        Input(List<Token> variableNames) {
+        public Input(List<Token> variableNames) {
             this.variableNames = variableNames;
         }
 
@@ -76,55 +78,68 @@ public abstract class Stmt {
             return variableNames;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitInputStmt(this);
         }
     }
 
-    static class Sugod extends Stmt {
-        final List<Stmt> statements;
+    public static class Sugod extends Stmt {
+        public final List<Stmt> statements;
         Sugod(List<Stmt> statements) {
             this.statements = statements;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitSugodStmt(this);
         }
     }
 
-    static class Var extends Stmt {
-        final Token name;
-        final Expr initializer;
+    public static class Var extends Stmt {
+        public final Token name;
+        public final Expr initializer;
         final Token type;
 
-        Var(Token name, Expr initializer, Token type) {
+        public Var(Token name, Expr initializer, Token type) {
             this.name = name;
             this.initializer = initializer;
             this.type = type;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public String getType() {
+            if(type.getTokenType().equals(TokenType.NUMERO)){
+                return "NUMERO";
+            }else if(type.getTokenType().equals(TokenType.TIPIK)){
+                return "TIPIK";
+            }else if(type.getTokenType().equals(TokenType.LETRA)){
+                return "LETRA";
+            }else if(type.getTokenType().equals(TokenType.TINUOD)){
+                return "TINUOD";
+            }
+            return null;
+        }
+
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarStmt(this);
         }
     }
 
-    static class If extends Stmt {
+    public static class If extends Stmt {
         If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
             this.condition = condition;
             this.thenBranch = thenBranch;
             this.elseBranch = elseBranch;
         }
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitIfStmt(this);
         }
-        final Expr condition;
-        final Stmt thenBranch;
-        final Stmt elseBranch;
+        public final Expr condition;
+        public final Stmt thenBranch;
+        public final Stmt elseBranch;
     }
 
-    interface Visitor<R> {
+    public interface Visitor<R> {
         R visitBlockStmt(Block var1);
 
         R visitExpressionStmt(Expression var1);

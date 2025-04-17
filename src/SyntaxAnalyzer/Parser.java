@@ -37,7 +37,7 @@ public class Parser {
 
 
     private Stmt statement() {
-        System.out.println(peek().getLexeme());
+
         if (match(TokenType.IF)) return ifStatement();
 
         if (match(TokenType.INPUT)){
@@ -288,10 +288,10 @@ public class Parser {
     }
 
     private Expr primary() {
-        if (match(TokenType.BOOL_FALSE)) return new Expr.Literal("DILI");
-        if (match(TokenType.BOOL_TRUE)) return new Expr.Literal("OO");
+        if (match(TokenType.BOOL_FALSE)) return new Expr.Literal(false);
+        if (match(TokenType.BOOL_TRUE)) return new Expr.Literal(true);
         if (match(TokenType.NULL)) return new Expr.Literal(null);
-        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.CHARACTER)) {
+        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.CHARACTER, TokenType.FLOAT)) {
             return new Expr.Literal(previous().getLiteral());
         }
         if (match(TokenType.LPAREN)) {

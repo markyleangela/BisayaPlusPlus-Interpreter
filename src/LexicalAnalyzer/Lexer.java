@@ -197,7 +197,7 @@ public class Lexer {
             return;
         }
 
-        addToken(TokenType.CHARACTER, String.valueOf(c));
+        addToken(TokenType.CHARACTER, c);
     }
 
     private void escapecode() {
@@ -245,8 +245,9 @@ public class Lexer {
         if(peek() == '.' && isDigit(peekNext())){
             advance();
             while(isDigit(peek())) advance();
+            addToken(TokenType.FLOAT, Float.parseFloat(source.substring(start, current)));
+            return;
         }
-
         addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 

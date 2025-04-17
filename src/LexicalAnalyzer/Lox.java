@@ -1,12 +1,12 @@
 package LexicalAnalyzer;
 
+import SemanticAnalyzer.Interpreter;
 import SyntaxAnalyzer.*;
 import Utils.RuntimeError;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -51,7 +51,7 @@ public class Lox {
 
     private static void runPrompt() throws IOException {
         // Read the entire file content as a single string
-        BufferedReader reader = new BufferedReader(new FileReader("src/Test/Test1.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("src/Test/TypeCheckingTest.txt"));
         StringBuilder sourceBuilder = new StringBuilder();
 
         String line;

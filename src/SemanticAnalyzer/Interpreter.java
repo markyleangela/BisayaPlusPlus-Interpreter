@@ -1,9 +1,11 @@
-package SyntaxAnalyzer;
+package SemanticAnalyzer;
 import java.util.List;
 import java.util.Scanner;
 
 import LexicalAnalyzer.Token;
 import LexicalAnalyzer.TokenType;
+import SyntaxAnalyzer.Expr;
+import SyntaxAnalyzer.Stmt;
 import Utils.RuntimeError;
 import LexicalAnalyzer.Lox;
 
@@ -11,10 +13,12 @@ public class Interpreter implements Expr.Visitor<Object>,
         Stmt.Visitor<Void> {
     private Environment environment = new Environment();
 
+
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
         return expr.value;
     }
+
 
 
 
@@ -87,38 +91,6 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
 
-//    @Override
-//    public Void visitPrintStmt(Stmt.Print stmt) {
-//        // Evaluate the expression and split by the concatenator (&)
-//        Object value = evaluate(stmt.expression);
-//        String[] parts = stringify(value).split("&");
-//
-//        StringBuilder result = new StringBuilder();
-//        for (String part : parts) {
-//            // Handle escape codes within square braces
-//            if (part.contains("[")) {
-//                part = part.replace("[#]", "#"); // Example: Replace [#] with #
-//            }
-//
-//            // Handle new line ($)
-//            if (part.contains("$")) {
-//                String[] subParts = part.split("\\$");
-//                for (int i = 0; i < subParts.length; i++) {
-//                    result.append(subParts[i]);
-//                    if (i < subParts.length - 1) {
-//                        result.append("\n"); // Add a new line for each $
-//                    }
-//                }
-//            } else {
-//                result.append(part);
-//            }
-//        }
-//
-//        // Print the final result
-//        System.out.println(result.toString());
-//        return null;
-//    }
-
 
 
 
@@ -140,7 +112,19 @@ public class Interpreter implements Expr.Visitor<Object>,
     public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
         for (Stmt.Var var : stmt.variables) {
             Object value = evaluate(var.initializer);  // Evaluate the initializer
-            environment.define(var.name.getLexeme(), value);  // Define in the current environment
+
+            if(var.getType().equals("NUMERO") && !(value instanceof Double)){
+                throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type NUMERO.");
+            }else if(var.getType().equals("TIPIK") && !(value instanceof Float)){
+                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
+            }else if(var.getType().equals("LETRA") && !(value instanceof Character)){
+                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
+            }else if(var.getType().equals("TINUOD") && !(value instanceof Boolean)){
+                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
+            }
+
+
+            environment.define(var.name.getLexeme(), value, var.getType());  // Define in the current environment
         }
         return null;
     }
@@ -151,6 +135,17 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
+        String type = environment.getType(expr.name.getLexeme());
+        if (type.equals("NUMERO") && !(value instanceof Double)) {
+            throw new RuntimeError(expr.name, "Expected a number for NUMERO variable.");
+        }else if(type.equals("TIPIK") && !(value instanceof Float)) {
+            throw new RuntimeError(expr.name, "Expected a number for TIPIK variable.");
+        }else if(type.equals("LETRA") && !(value instanceof Character)) {
+            throw new RuntimeError(expr.name, "Expected a character for LETRA variable.");
+        }else if(type.equals("TINUOD") && !(value instanceof Boolean)) {
+            throw new RuntimeError(expr.name, "Expected a boolean for TINUOD variable.");
+        }
+
         environment.assign(expr.name, value);
         return value;
     }
@@ -171,7 +166,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        System.out.println("Retrieving variable: " + expr.name.getLexeme());
+
         return environment.get(expr.name);  // This should now correctly retrieve the value.
     }
 
@@ -209,42 +204,28 @@ public class Interpreter implements Expr.Visitor<Object>,
                         "Operands must be two numbers or two strings.");
             case GREATER_THAN:
                 checkNumberOperands(expr.operator, left, right);
-                if((double)left > (double)right){
-                    return "OO";
-                }
-                return "DILI";
+                return (double)left > (double)right;
+
             case GREATER_EQUAL:
                 checkNumberOperands(expr.operator, left, right);
-                if((double)left >= (double)right){
-                    return "OO";
-                }
-                return "DILI";
+                return (double)left >= (double)right;
 
             case LESS_THAN:
                 checkNumberOperands(expr.operator, left, right);
-                if((double)left < (double)right){
-                    return "OO";
-                }
-                return "DILI";
+                return (double)left < (double)right;
 
             case LESS_EQUAL:
                 checkNumberOperands(expr.operator, left, right);
-                if((double)left <= (double)right){
-                    return "OO";
-                }
-                return "DILI";
+                return (double)left <= (double)right;
+
 
             case NOT_EQUALS:
-                if(!isEqual(left, right)){
-                    return "OO";
-                }
-                return "DILI";
+                return !isEqual(left, right);
+
 
             case EQUALS:
-                if(isEqual(left, right)){
-                    return "OO";
-                }
-                return "DILI";
+                return isEqual(left, right);
+
             case CONCAT:return stringify(left) + stringify(right);
             case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
         }
@@ -267,6 +248,9 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     private String stringify(Object object) {
         if (object == null) return "nil";
+        if (object instanceof Boolean) {
+            return (Boolean) object ? "OO" : "DILI";
+        }
         if (object instanceof Double) {
             String text = object.toString();
             if (text.endsWith(".0")) {

@@ -11,16 +11,16 @@ public abstract class Expr {
     public Expr() {
     }
 
-    abstract <R> R accept(Visitor<R> var1);
+    public abstract <R> R accept(Visitor<R> var1);
 
-    static class Variable extends Expr {
-        final Token name;
+    public static class Variable extends Expr {
+        public final Token name;
 
         Variable(Token name) {
             this.name = name;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
@@ -29,10 +29,10 @@ public abstract class Expr {
         }
     }
 
-    static class Binary extends Expr {
-        final Expr left;
-        final Token operator;
-        final Expr right;
+    public static class Binary extends Expr {
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
 
         Binary(Expr left, Token operator, Expr right) {
             this.left = left;
@@ -40,7 +40,7 @@ public abstract class Expr {
             this.right = right;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
@@ -49,14 +49,14 @@ public abstract class Expr {
         }
     }
 
-    static class Grouping extends Expr {
-        final Expr expression;
+    public static class Grouping extends Expr {
+        public final Expr expression;
 
         Grouping(Expr expression) {
             this.expression = expression;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
 
             if (visitor == null) {
                 return null; // or handle null as needed
@@ -65,14 +65,14 @@ public abstract class Expr {
         }
     }
 
-    static class Literal extends Expr {
-        final Object value;
+    public static class Literal extends Expr {
+        public final Object value;
 
         Literal(Object value) {
             this.value = value;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
@@ -81,16 +81,16 @@ public abstract class Expr {
         }
     }
 
-    static class Unary extends Expr {
-        final Token operator;
-        final Expr right;
+    public static class Unary extends Expr {
+        public final Token operator;
+        public final Expr right;
 
         Unary(Token operator, Expr right) {
             this.operator = operator;
             this.right = right;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
@@ -98,16 +98,16 @@ public abstract class Expr {
         }
     }
 
-    static class Assign extends Expr {
-        final Token name;
-        final Expr value;
+    public static class Assign extends Expr {
+        public final Token name;
+        public final Expr value;
 
         Assign(Token name, Expr value) {
             this.name = name;
             this.value = value;
         }
 
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
@@ -115,26 +115,26 @@ public abstract class Expr {
         }
     }
 
-    static class Logical extends Expr {
+    public static class Logical extends Expr {
         Logical(Expr left, Token operator, Expr right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
         }
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             if (visitor == null) {
                 return null; // or handle null as needed
             }
 
             return visitor.visitLogicalExpr(this);
         }
-        final Expr left;
-        final Token operator;
-        final Expr right;
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
     }
 
-    interface Visitor<R> {
+    public interface Visitor<R> {
         R visitBinaryExpr(Binary var1);
 
         R visitGroupingExpr(Grouping var1);

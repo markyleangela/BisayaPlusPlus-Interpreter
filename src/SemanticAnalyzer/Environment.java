@@ -1,6 +1,7 @@
-package SyntaxAnalyzer;
+package SemanticAnalyzer;
 
 import LexicalAnalyzer.Token;
+import LexicalAnalyzer.TokenType;
 import Utils.RuntimeError;
 
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 
 public class Environment {
     private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, String> types = new HashMap<>();
+
     final Environment enclosing;
 
     Environment() {
@@ -19,6 +22,11 @@ public class Environment {
 
     void define(String name, Object value) {
         values.put(name, value);
+    }
+
+    void define(String name, Object value, String type){
+        values.put(name, value);
+        types.put(name, type);
     }
 
     Object get(Token name) {
@@ -42,6 +50,15 @@ public class Environment {
         throw new RuntimeError(name,
                 "Undefined variable '" + name.getLexeme() + "'.");
     }
+
+    String getType(String name) {
+        if (types.containsKey(name)) {
+            return types.get(name);
+        }
+        throw new RuntimeError(new Token(TokenType.IDENTIFIER, name, null, 0),
+                "Undefined variable type '" + name + "'.");
+    }
+
 
     boolean containsKey(String name) {
         return values.containsKey(name);
