@@ -28,13 +28,13 @@ public class Lexer {
         keywords.put("TINUOD",TokenType.TINUOD);
         keywords.put("IPAKITA",TokenType.PRINT);
         keywords.put("DAWAT",TokenType.INPUT);
-        keywords.put("KUNG",TokenType.IF);
-        keywords.put("KUNG WALA",TokenType.ELSE);
-        keywords.put("KUNG DILI",TokenType.ELSE_IF);
+//        keywords.put("KUNG",TokenType.IF);
+//        keywords.put("KUNG WALA",TokenType.ELSE);
+//        keywords.put("KUNG DILI",TokenType.ELSE_IF);
         keywords.put("PUNDOK",TokenType.BLOCK);
         keywords.put("DILI",TokenType.BOOL_FALSE);
         keywords.put("OO",TokenType.BOOL_TRUE);
-        keywords.put("ALANG SA",TokenType.FOR);
+//        keywords.put("ALANG SA",TokenType.FOR);
         keywords.put("UG",TokenType.AND);
         keywords.put("O",TokenType.OR);
     }
@@ -197,7 +197,7 @@ public class Lexer {
             return;
         }
 
-        addToken(TokenType.CHARACTER, String.valueOf(c));
+        addToken(TokenType.CHARACTER, c);
     }
 
     private void escapecode() {
@@ -245,18 +245,74 @@ public class Lexer {
         if(peek() == '.' && isDigit(peekNext())){
             advance();
             while(isDigit(peek())) advance();
+            addToken(TokenType.FLOAT, Float.parseFloat(source.substring(start, current)));
+            return;
         }
-
         addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
-    private void identifier(){
-        while(isAlphaNumeric(peek())) advance();
+    private void identifier() {
+        while (isAlphaNumeric(peek())) advance();
 
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
-        if(type == null) type = TokenType.IDENTIFIER;
+
+        // 🌟 Custom logic to detect multi-word keywords (e.g., KUNG WALA, KUNG DILI)
+        if (text.equals("KUNG")) {
+            skipWhitespace(); // allow spaces after KUNG
+
+            int saveCurrent = current;
+            int saveStart = start;
+
+            // Try to match "WALA"
+            if (matchWord("WALA")) {
+                addToken(TokenType.ELSE); // 🔥 Treat "KUNG WALA" as ELSE
+                return;
+            }
+            // Try to match "DILI"
+            else if (matchWord("DILI")) {
+                addToken(TokenType.ELSE_IF); // 🔥 Treat "KUNG DILI" as ELSE_IF
+                return;
+            } else {
+                current = saveCurrent; // rollback if not matched
+                start = saveStart;
+            }
+
+            type = TokenType.IF; // fallback: treat as IF
+        }
+
+        if (type == null) type = TokenType.IDENTIFIER;
         addToken(type);
     }
+
+    // 🔧 Helper method to skip spaces/tabs/newlines after a word
+    private void skipWhitespace() {
+        while (!isAtEnd() && (peek() == ' ' || peek() == '\t' || peek() == '\r' || peek() == '\n')) {
+            if (peek() == '\n') line++;
+            advance();
+        }
+    }
+
+    // 🔧 Helper method to match exact next word
+    private boolean matchWord(String expected) {
+        int length = expected.length();
+        if (current + length > source.length()) return false;
+
+        String next = source.substring(current, current + length);
+
+        if (next.equals(expected) && isBoundary(current + length)) {
+            current += length;
+            return true;
+        }
+
+        return false;
+    }
+
+    // 🔧 Check that the next character is a boundary (end or not alphanumeric)
+    private boolean isBoundary(int index) {
+        return index >= source.length() || !isAlphaNumeric(source.charAt(index));
+    }
+
+
 }
 
