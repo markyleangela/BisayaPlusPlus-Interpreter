@@ -80,8 +80,10 @@ public class Interpreter implements Expr.Visitor<Object>,
             Scanner scanner = new Scanner(System.in);
             String inputValue = scanner.nextLine();
 
+
             // Store the input value in the environment
             environment.define(varName.getLexeme(), inputValue);
+
 
             // Optionally, display the result
             System.out.println("Assigned value " + inputValue + " to variable " + varName.getLexeme());
@@ -111,23 +113,27 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
         for (Stmt.Var var : stmt.variables) {
-            Object value = evaluate(var.initializer);  // Evaluate the initializer
+            Object value = null;
 
-            if(var.getType().equals("NUMERO") && !(value instanceof Double)){
-                throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type NUMERO.");
-            }else if(var.getType().equals("TIPIK") && !(value instanceof Float)){
-                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
-            }else if(var.getType().equals("LETRA") && !(value instanceof Character)){
-                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
-            }else if(var.getType().equals("TINUOD") && !(value instanceof Boolean)){
-                throw  new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
+            if (var.initializer != null) {
+                value = evaluate(var.initializer);
+
+                if (var.getType().equals("NUMERO") && !(value instanceof Double)) {
+                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type NUMERO.");
+                } else if (var.getType().equals("TIPIK") && !(value instanceof Float)) {
+                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
+                } else if (var.getType().equals("LETRA") && !(value instanceof Character)) {
+                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
+                } else if (var.getType().equals("TINUOD") && !(value instanceof Boolean)) {
+                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
+                }
             }
 
-
-            environment.define(var.name.getLexeme(), value, var.getType());  // Define in the current environment
+            environment.define(var.name.getLexeme(), value, var.getType());
         }
         return null;
     }
+
 
 
 
@@ -136,9 +142,16 @@ public class Interpreter implements Expr.Visitor<Object>,
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
         String type = environment.getType(expr.name.getLexeme());
+
+        if (value == null) {
+            environment.assign(expr.name, null);
+            return null;
+        }
+
         if (type.equals("NUMERO") && !(value instanceof Double)) {
             throw new RuntimeError(expr.name, "Expected a number for NUMERO variable.");
         }else if(type.equals("TIPIK") && !(value instanceof Float)) {
+            System.out.println(value.getClass());
             throw new RuntimeError(expr.name, "Expected a number for TIPIK variable.");
         }else if(type.equals("LETRA") && !(value instanceof Character)) {
             throw new RuntimeError(expr.name, "Expected a character for LETRA variable.");
@@ -196,10 +209,10 @@ public class Interpreter implements Expr.Visitor<Object>,
                 {
                     return (double)left + (double)right;
                 }
-                if (left instanceof String && right instanceof String)
-                {
-                    return (String)left + (String)right;
-                }
+//                if (left instanceof String && right instanceof String)
+//                {
+//                    return (String)left + (String)right;
+//                }
                 throw new RuntimeError(expr.operator,
                         "Operands must be two numbers or two strings.");
             case GREATER_THAN:
@@ -247,7 +260,7 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     private String stringify(Object object) {
-        if (object == null) return "nil";
+        if (object == null) return "null";
         if (object instanceof Boolean) {
             return (Boolean) object ? "OO" : "DILI";
         }

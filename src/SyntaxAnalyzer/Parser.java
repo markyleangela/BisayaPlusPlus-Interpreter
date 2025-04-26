@@ -98,10 +98,14 @@ public class Parser {
         consume(TokenType.LPAREN, "Expect '(' after 'if'.");
         Expr condition = expression();
         consume(TokenType.RPAREN, "Expect ')' after if condition.");
+        consume(TokenType.BLOCK, "Expect 'PUNDOK' after ')'");
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
-        if (match(TokenType.ELSE)) {
-
+        if (match(TokenType.ELSE_IF)) {
+            elseBranch = ifStatement();
+        }
+        else if (match(TokenType.ELSE)) {
+            consume(TokenType.BLOCK, "Expect 'PUNDOK' after 'KUNG WALA'");
             elseBranch = statement();
         }
         return new Stmt.If(condition, thenBranch, elseBranch);

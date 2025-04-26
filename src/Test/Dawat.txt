@@ -1,8 +1,3 @@
 SUGOD
-    MUGNA NUMERO x, z --need to handle null values variables
-    -- comment
-     IPAKITA: x & z
-    DAWAT: x,z,w -- need to fix undefined variables, should not accept [pass error if undefined]]
-    IPAKITA: x & z
+
 KATAPUSAN
- -- need to add DAWAT as well
