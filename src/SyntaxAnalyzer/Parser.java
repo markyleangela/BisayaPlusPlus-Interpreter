@@ -421,7 +421,16 @@ public class Parser {
         if (match(TokenType.BOOL_FALSE)) return new Expr.Literal(false);
         if (match(TokenType.BOOL_TRUE)) return new Expr.Literal(true);
         if (match(TokenType.NULL)) return new Expr.Literal(null);
-        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.CHARACTER, TokenType.FLOAT)) {
+        if (match(TokenType.NUMBER)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.STRING)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.CHARACTER)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.FLOAT)) {
             return new Expr.Literal(previous().getLiteral());
         }
         if (match(TokenType.LPAREN)) {

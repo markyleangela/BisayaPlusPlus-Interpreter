@@ -99,17 +99,90 @@ public class Interpreter implements Expr.Visitor<Object>,
             Scanner scanner = new Scanner(System.in);
             String inputValue = scanner.nextLine();
 
+            // Retrieve the existing variable type from the environment
+            Object existing = environment.get(varName);
 
-            // Store the input value in the environment
-            environment.define(varName.getLexeme(), inputValue);
-
-
-            // Optionally, display the result
-            System.out.println("Assigned value " + inputValue + " to variable " + varName.getLexeme());
+            try {
+                // Check the type of the existing variable and parse input accordingly
+                if (existing instanceof Double) {
+                    // If the variable is a Double, parse the input to Double and assign
+                    environment.assign(varName, Double.parseDouble(inputValue));
+                    System.out.println("Assigned number " + inputValue + " to variable " + varName.getLexeme());
+                } else if (existing instanceof Boolean) {
+                    // If the variable is a Boolean, accept "OO" for true and "DILI" for false
+                    if (inputValue.equalsIgnoreCase("\"OO\"")) {
+                        environment.assign(varName, true);
+                        System.out.println("Assigned boolean true (OO) to variable " + varName.getLexeme());
+                    } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+                        environment.assign(varName, false);
+                        System.out.println("Assigned boolean false (DILI) to variable " + varName.getLexeme());
+                    } else {
+                        throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+                    }
+                } else if (existing instanceof Character) {
+                    // If the variable is a String, treat the input as a String and assign
+                    environment.assign(varName, inputValue);
+                    System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
+                } else if (existing instanceof Integer) {
+                    // If the variable is an Integer, parse the input to Integer and assign
+                    environment.assign(varName, Integer.parseInt(inputValue));
+                    System.out.println("Assigned integer " + inputValue + " to variable " + varName.getLexeme());
+                } else {
+                    // If the variable type is not recognized, throw an error
+                    throw new RuntimeError(varName, "Undefined variable or unsupported type, cannot assign: " + varName.getLexeme());
+                }
+            } catch (NumberFormatException e) {
+                // If parsing fails for numeric types, treat it as a string
+                environment.assign(varName, inputValue);
+                System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
+            }
         }
-
         return null;
     }
+
+//
+//    @Override
+//    public Void visitInputStmt(Stmt.Input inputStmt) {
+//        Scanner sc = new Scanner(System.in);
+//        System.out.println("Input values separated by comma: ");
+//        String inputLine = sc.nextLine();
+//
+//        String [] values = inputLine.split(",");
+//        if (values.length != inputStmt.getVariableNames().size()) {
+//            throw new RuntimeError(inputStmt.getVariableNames().get(0), "Kuwang or sobra imo gibutang nga mga value.");
+//        }
+//
+//        for(int i=0;i <inputStmt.getVariableNames().size(); i++){
+//            Token varToken = inputStmt.getVariableNames().get(i);
+//            String varName = varToken.getLexeme();
+//            String rawValue = values[i].trim();
+//            // String dataType = environment.getType(stmt.names.get(i), rawValue);
+//
+//            Object existing = environment.get(varToken);
+//
+//            if(existing instanceof Double){
+//                environment.assign(varToken,Double.parseDouble(rawValue));
+//
+//            } else if(existing instanceof Boolean) {
+//                if(rawValue.equals("OO")){
+//                    environment.assign(varToken,true);
+//                }else if(rawValue.equals("DILI")){
+//                    environment.assign(varToken,false);
+//                }else{
+//                    throw new RuntimeError(varToken, "TINUOD should be OO or DILI");
+//                }
+//            } else if(existing instanceof String){
+//                environment.assign(varToken,rawValue);
+//            } else if(existing instanceof Integer){
+//                environment.assign(varToken,Integer.parseInt(rawValue));
+//            }
+//            else{
+//                throw new RuntimeError(inputStmt.getVariableNames().get(i), "Undefined varible, cannot assign: dawat");
+//            }
+//        }
+//        return null;
+//    }
+
 
 
 
@@ -143,7 +216,7 @@ public class Interpreter implements Expr.Visitor<Object>,
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
                 } else if (var.getType().equals("LETRA") && !(value instanceof Character)) {
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
-                } else if (var.getType().equals("TINUOD") && !(value instanceof Boolean)) {
+                } else if (var.getType().equals("TINUOD") && (!(value instanceof Boolean))) {
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
                 }
             }
@@ -228,12 +301,17 @@ public class Interpreter implements Expr.Visitor<Object>,
                 {
                     return (double)left + (double)right;
                 }
-//                if (left instanceof String && right instanceof String)
-//                {
-//                    return (String)left + (String)right;
-//                }
+                if (left instanceof String && right instanceof String)
+                {
+                    return (String)left + (String)right;
+                }
+
+                if (left instanceof Character && right instanceof Character)
+                {
+                    return (Character)left + (Character) right;
+                }
                 throw new RuntimeError(expr.operator,
-                        "Operands must be two numbers or two strings.");
+                        "Operands must be two numbers, two strings, or two characters.");
             case GREATER_THAN:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left > (double)right;
