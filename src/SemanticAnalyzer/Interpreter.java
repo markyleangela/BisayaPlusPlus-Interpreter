@@ -92,6 +92,47 @@ public class Interpreter implements Expr.Visitor<Object>,
 
 
 
+//    @Override
+//    public Void visitInputStmt(Stmt.Input inputStmt) {
+//        for (Token varName : inputStmt.getVariableNames()) {
+//            System.out.println("Enter value for " + varName.getLexeme() + ": ");
+//            Scanner scanner = new Scanner(System.in);
+//            String inputValue = scanner.nextLine();
+//
+//
+//            Object existing = environment.get(varName);
+//
+//
+//            try {
+//
+//                if (existing instanceof Double) {
+//                    environment.assign(varName, Double.parseDouble(inputValue));
+//                } else if (existing instanceof Boolean) {
+//                    if (inputValue.equalsIgnoreCase("\"OO\"")) {
+//                        environment.assign(varName, true);
+//                    } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+//                        environment.assign(varName, false);
+//                    } else {
+//                        throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+//                    }
+//                } else if (existing instanceof Character) {
+//                    environment.assign(varName, inputValue);
+//                } else if (existing instanceof Number) {
+//                    environment.assign(varName, Integer.parseInt(inputValue));
+//                } else if(existing == null) {
+//                    throw new RuntimeError(varName, "Undefined variable or unsupported type, cannot assign: " + varName.getLexeme());
+//                }else {
+//                    throw new RuntimeError(varName, "Unrecognized type for variable: " + varName.getLexeme());
+//                }
+//            } catch (NumberFormatException e) {
+//                // If parsing fails for numeric types, treat it as a string
+//                environment.assign(varName, inputValue);
+//                System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
+//            }
+//        }
+//        return null;
+//    }
+
     @Override
     public Void visitInputStmt(Stmt.Input inputStmt) {
         for (Token varName : inputStmt.getVariableNames()) {
@@ -99,91 +140,74 @@ public class Interpreter implements Expr.Visitor<Object>,
             Scanner scanner = new Scanner(System.in);
             String inputValue = scanner.nextLine();
 
-            // Retrieve the existing variable type from the environment
+            // Check if the variable is already initialized in the environment
             Object existing = environment.get(varName);
 
-            try {
-                // Check the type of the existing variable and parse input accordingly
-                if (existing instanceof Double) {
-                    // If the variable is a Double, parse the input to Double and assign
-                    environment.assign(varName, Double.parseDouble(inputValue));
-                    System.out.println("Assigned number " + inputValue + " to variable " + varName.getLexeme());
-                } else if (existing instanceof Boolean) {
-                    // If the variable is a Boolean, accept "OO" for true and "DILI" for false
+            // If the variable is uninitialized (existing == null), we need to check its type
+            if (existing == null) {
+                // Get the type of the variable from the environment or declaration
+                String varType = environment.getType(varName.getLexeme()); // Assume you have a method that can return variable type
+                if (varType == null) {
+                    throw new RuntimeError(varName, "Variable type is undefined.");
+                }
+
+                // Initialize the variable with a value based on its type
+                if (varType.equals("NUMERO")|| varType.equals("TIPIK")) {
+                    try {
+                        // Try parsing the input value as a number (either integer or float)
+                        environment.assign(varName, Double.parseDouble(inputValue));
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeError(varName, "Expected a number, but got: " + inputValue);
+                    }
+                } else if (varType.equals("TINUOD")) {
+                    // Handle boolean values
                     if (inputValue.equalsIgnoreCase("\"OO\"")) {
                         environment.assign(varName, true);
-                        System.out.println("Assigned boolean true (OO) to variable " + varName.getLexeme());
                     } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
                         environment.assign(varName, false);
-                        System.out.println("Assigned boolean false (DILI) to variable " + varName.getLexeme());
                     } else {
                         throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
                     }
-                } else if (existing instanceof Character) {
-                    // If the variable is a String, treat the input as a String and assign
+                } else if (varType.equals("LETRA")) {
+                    // Handle character type
+                    if (inputValue.length() == 1) {
+                        environment.assign(varName, inputValue.charAt(0));
+                    } else {
+                        throw new RuntimeError(varName, "Expected a single character, but got: " + inputValue);
+                    }
+                } else {
+                    // If the type is not recognized, throw an error
+                    throw new RuntimeError(varName, "Unsupported variable type: " + varType);
+                }
+            } else {
+                // If the variable is already initialized, handle the assignment based on its existing type
+                try {
+                    if (existing instanceof Double) {
+                        environment.assign(varName, Double.parseDouble(inputValue));
+                    } else if (existing instanceof Boolean) {
+                        if (inputValue.equalsIgnoreCase("\"OO\"")) {
+                            environment.assign(varName, true);
+                        } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+                            environment.assign(varName, false);
+                        } else {
+                            throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+                        }
+                    } else if (existing instanceof Character) {
+                        environment.assign(varName, inputValue.charAt(0));
+                    } else if (existing instanceof Number) {
+                        environment.assign(varName, Integer.parseInt(inputValue));
+                    } else {
+                        throw new RuntimeError(varName, "Unrecognized type for variable: " + varName.getLexeme());
+                    }
+                } catch (NumberFormatException e) {
+                    // If parsing fails for numeric types, treat it as a string
                     environment.assign(varName, inputValue);
                     System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
-                } else if (existing instanceof Integer) {
-                    // If the variable is an Integer, parse the input to Integer and assign
-                    environment.assign(varName, Integer.parseInt(inputValue));
-                    System.out.println("Assigned integer " + inputValue + " to variable " + varName.getLexeme());
-                } else {
-                    // If the variable type is not recognized, throw an error
-                    throw new RuntimeError(varName, "Undefined variable or unsupported type, cannot assign: " + varName.getLexeme());
                 }
-            } catch (NumberFormatException e) {
-                // If parsing fails for numeric types, treat it as a string
-                environment.assign(varName, inputValue);
-                System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
             }
         }
         return null;
     }
-
-//
-//    @Override
-//    public Void visitInputStmt(Stmt.Input inputStmt) {
-//        Scanner sc = new Scanner(System.in);
-//        System.out.println("Input values separated by comma: ");
-//        String inputLine = sc.nextLine();
-//
-//        String [] values = inputLine.split(",");
-//        if (values.length != inputStmt.getVariableNames().size()) {
-//            throw new RuntimeError(inputStmt.getVariableNames().get(0), "Kuwang or sobra imo gibutang nga mga value.");
-//        }
-//
-//        for(int i=0;i <inputStmt.getVariableNames().size(); i++){
-//            Token varToken = inputStmt.getVariableNames().get(i);
-//            String varName = varToken.getLexeme();
-//            String rawValue = values[i].trim();
-//            // String dataType = environment.getType(stmt.names.get(i), rawValue);
-//
-//            Object existing = environment.get(varToken);
-//
-//            if(existing instanceof Double){
-//                environment.assign(varToken,Double.parseDouble(rawValue));
-//
-//            } else if(existing instanceof Boolean) {
-//                if(rawValue.equals("OO")){
-//                    environment.assign(varToken,true);
-//                }else if(rawValue.equals("DILI")){
-//                    environment.assign(varToken,false);
-//                }else{
-//                    throw new RuntimeError(varToken, "TINUOD should be OO or DILI");
-//                }
-//            } else if(existing instanceof String){
-//                environment.assign(varToken,rawValue);
-//            } else if(existing instanceof Integer){
-//                environment.assign(varToken,Integer.parseInt(rawValue));
-//            }
-//            else{
-//                throw new RuntimeError(inputStmt.getVariableNames().get(i), "Undefined varible, cannot assign: dawat");
-//            }
-//        }
-//        return null;
-//    }
-
-
 
 
 

@@ -114,65 +114,6 @@ public class Parser {
 
 
 
-//    private Stmt forStatement() {
-//        consume(TokenType.LPAREN, "Expect '(' after 'ALANG SA'.");
-//
-//        // Initialize statement (could be a variable declaration or expression statement)
-//        Stmt initializer;
-//        if (match(TokenType.MUGNA)) {
-//            initializer = varDeclaration(); // Create a new variable declaration
-//        } else if (match(TokenType.COMMA)) {
-//            initializer = null; // If no initializer, set as null
-//        } else {
-//            initializer = expressionStatement(); // Handle expression statement
-//        }
-//
-//        consume(TokenType.COMMA, "Expect ',' after initializer.");
-//
-//        // Parse the loop condition (e.g., ctr <= 10)
-//        Expr condition = null;
-//        if (!check(TokenType.COMMA)) {
-//            condition = expression(); // Parse loop condition expression
-//        }
-//        consume(TokenType.COMMA, "Expect ',' after loop condition.");
-//
-//        // Parse the increment expression (e.g., ctr = ctr + 1)
-//        Expr increment = null;
-//        if (!check(TokenType.RPAREN)) {
-//            increment = expression(); // Parse the increment expression
-//        }
-//
-//        consume(TokenType.RPAREN, "Expect ')' after for clauses.");
-//        consume(TokenType.BLOCK, "Expect PUNDOK after for clauses.");
-//        consume(TokenType.LBRACE, "Expect { after for PUNDOK.");
-//
-//        // Handle the block (body of the loop)
-//        Stmt body = statement();
-//
-//        // If increment exists, add it to the body of the loop
-//        if (increment != null) {
-//            body = new Stmt.Block(
-//                    Arrays.asList(
-//                            body,
-//                            new Stmt.Expression(increment) // Add increment expression after body
-//                    ));
-//        }
-//
-//        // If no condition is specified, assume the loop will always run (infinite loop)
-//        if (condition == null) condition = new Expr.Literal(true);
-//
-//        // The body of the loop is wrapped in a while loop based on the condition
-//        body = new Stmt.While(condition, body);
-//
-//        // If there was an initializer, include it at the start of the loop
-//        if (initializer != null) {
-//            body = new Stmt.Block(Arrays.asList(initializer, body)); // Wrap body with initializer
-//        }
-//
-//        consume(TokenType.RBRACE, "Expect } after for statements.");
-//        return body; // Return the complete for-loop statement
-//    }
-
     private Stmt forStatement() {
         consume(TokenType.LPAREN, "Expect '(' after 'ALANG SA'.");
 
@@ -182,7 +123,7 @@ public class Parser {
             initializer = null;
         }
         else if (match(TokenType.MUGNA)) {
-            initializer = varDeclaration();
+            initializer = singleVarDeclaration();
         } else {
             initializer = expressionStatement();  // Handle other expression statement
         }
@@ -269,6 +210,27 @@ public class Parser {
 
         return new Stmt.VarDeclaration(vars);
     }
+
+
+    private Stmt singleVarDeclaration() {
+        // Consume the variable type (e.g., NUMERO, LETRA, TINUOD, TIPIK)
+        consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
+        Token type = previous();
+
+        // Only handle a single variable declaration
+        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        // Check if the variable has an initializer
+        Expr initializer = null;
+        if (match(TokenType.ASSIGNMENT)) {
+
+            initializer = expression();
+        }
+
+        // Create and return the variable declaration statement
+        return new Stmt.Var(name, initializer, type);
+    }
+
 
 
 
