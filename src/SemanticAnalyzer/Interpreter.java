@@ -38,6 +38,17 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
+
+        if (stmt.expression instanceof Expr.Variable) {
+            Expr.Variable variableExpr = (Expr.Variable) stmt.expression;
+            String varName = variableExpr.name.getLexeme();  // Get the variable name (e.g., 'ctr')
+
+            // Check if the variable exists in the environment
+            if (!environment.containsKey(varName)) {
+                throw new RuntimeException("Undefined variable: " + varName);
+            }
+        }
+
         evaluate(stmt.expression);
         return null;
     }
@@ -51,6 +62,14 @@ public class Interpreter implements Expr.Visitor<Object>,
             if (!isTruthy(left)) return left;
         }
         return evaluate(expr.right);
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+        while(isTruthy(evaluate(stmt.condition))){
+            execute(stmt.body);
+        }
+        return null;
     }
 
     @Override
