@@ -1,0 +1,6 @@
+SUGOD
+    MUGNA NUMERO x = 2,y
+    x = x + 10
+    y = 20
+    IPAKITA: x & y
+KATAPUSAN

@@ -34,8 +34,6 @@ public class Parser {
     }
 
 
-
-
     private Stmt statement() {
 
         if (match(TokenType.IF)) return ifStatement();
@@ -117,9 +115,9 @@ public class Parser {
     private Stmt forStatement() {
         consume(TokenType.LPAREN, "Expect '(' after 'ALANG SA'.");
 
-        // Initialize statement (could be a variable declaration or expression statement)
+
         Stmt initializer;
-        if (match(TokenType.COMMA)) { // If no initializer, handle as null
+        if (match(TokenType.COMMA)) {
             initializer = null;
         }
         else if (match(TokenType.MUGNA)) {
@@ -145,7 +143,6 @@ public class Parser {
 
         consume(TokenType.RPAREN, "Expect ')' after for clauses.");
         consume(TokenType.BLOCK, "Expect 'PUNDOK' after ).");  // "PUNDOK" for block in Bisaya++
-        consume(TokenType.LBRACE, "Expect '{' after for PUNDOK.");
 
         // Handle the block (body of the loop)
         Stmt body = statement();
@@ -166,11 +163,12 @@ public class Parser {
         body = new Stmt.While(condition, body);
 
         // If there was an initializer, include it at the start of the loop
-        if (initializer != null) {
-            body = new Stmt.Block(Arrays.asList(initializer, body));  // Wrap body with initializer
-        }
+        List<Stmt> statements = new ArrayList<>();
+        if (initializer != null) statements.add(initializer);
+        statements.add(body);
+        body = new Stmt.Block(statements);
 
-        consume(TokenType.RBRACE, "Expect '}' after for statements.");
+
         return body;  // Return the complete for-loop statement
     }
 
@@ -217,6 +215,8 @@ public class Parser {
         consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
         Token type = previous();
 
+        List<Stmt.Var> vars = new ArrayList<>();
+
         // Only handle a single variable declaration
         Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
@@ -225,10 +225,12 @@ public class Parser {
         if (match(TokenType.ASSIGNMENT)) {
 
             initializer = expression();
+            vars.add(new Stmt.Var(name, initializer, type));
         }
 
+
         // Create and return the variable declaration statement
-        return new Stmt.Var(name, initializer, type);
+        return new Stmt.VarDeclaration(vars);
     }
 
 

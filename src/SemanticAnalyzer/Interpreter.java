@@ -214,17 +214,34 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        // Evaluate the initializer expression
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
+        } else {
+            // Assign default based on declared type
+            switch (stmt.getType()) {
+                case "NUMERO":
+                    value = 0.0;  // Use 0.0 if you want doubles by default
+                    break;
+                case "TIPIK":
+                    value = 0.0f;
+                    break;
+                case "TINUOD":
+                    value = false;
+                    break;
+                case "LETRA":
+                    value = '\0';
+                    break;
+                default:
+                    throw new RuntimeError(stmt.name, "Unsupported variable type: " + stmt.getType());
+            }
         }
 
-        // Define the variable in the environment
-        environment.define(stmt.name.getLexeme(), value);
-
+        environment.define(stmt.name.getLexeme(), value, stmt.getType());
         return null;
     }
+
+
 
     @Override
     public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
@@ -245,7 +262,9 @@ public class Interpreter implements Expr.Visitor<Object>,
                 }
             }
 
+
             environment.define(var.name.getLexeme(), value, var.getType());
+
         }
         return null;
     }
@@ -257,7 +276,12 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        String type = environment.getType(expr.name.getLexeme());
+
+
+
+
+
+        String type = environment.getType(expr.name.getLexeme()); //naay problema diri
 
         if (value == null) {
             environment.assign(expr.name, null);
@@ -439,7 +463,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, new Environment(environment));
+//        executeBlock(stmt.statements, new Environment(environment));
+        executeBlock(stmt.statements, environment);
         return null;
     }
 
