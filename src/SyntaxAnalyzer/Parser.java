@@ -24,9 +24,9 @@ public class Parser {
     private Stmt declaration() {
         try {
             if (match(TokenType.MUGNA)) {
-                return varDeclaration(); // Handle variable declaration first
+                return varDeclaration();
             }
-            return statement(); // If not variable declaration, treat as a statement
+            return statement();
         } catch (ParseError error) {
             synchronize();
             return null;
@@ -34,12 +34,10 @@ public class Parser {
     }
 
 
-
-
     private Stmt statement() {
 
         if (match(TokenType.IF)) return ifStatement();
-
+        if (match(TokenType.FOR)) return forStatement();
         if (match(TokenType.INPUT)){
             consume(TokenType.COLON, "Expect ':' after input statement.");
             return inputStatement();
@@ -56,13 +54,13 @@ public class Parser {
     private Stmt inputStatement() {
         List<Token> variableNames = new ArrayList<>();
 
-        // Consume the list of variables separated by commas
+
         do {
             Token variableName = consume(TokenType.IDENTIFIER, "Expect variable name.");
             variableNames.add(variableName);
-        } while (match(TokenType.COMMA));  // Allow multiple variables
+        } while (match(TokenType.COMMA));
 
-        return new Stmt.Input(variableNames);  // Return the input statement with the list of variable names
+        return new Stmt.Input(variableNames);
     }
 
 
@@ -94,10 +92,11 @@ public class Parser {
     }
 
 
+
     private Stmt ifStatement() {
-        consume(TokenType.LPAREN, "Expect '(' after 'if'.");
+        consume(TokenType.LPAREN, "Expect '(' after 'KUNG'.");
         Expr condition = expression();
-        consume(TokenType.RPAREN, "Expect ')' after if condition.");
+        consume(TokenType.RPAREN, "Expect ')' after KUNG condition.");
         consume(TokenType.BLOCK, "Expect 'PUNDOK' after ')'");
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
@@ -111,19 +110,80 @@ public class Parser {
         return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
-//    private Stmt varDeclaration() {
-//        Token type = consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TIPIK, TokenType.TINUOD);
-//        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
-//
-//        Expr initializer = null;
-//        if (match(TokenType.ASSIGNMENT)) {
-//            initializer = expression();
-//        }
-//        return new Stmt.Var(name, initializer, type);
-//    }
+
+
+    private Stmt forStatement() {
+        consume(TokenType.LPAREN, "Expect '(' after 'ALANG SA'.");
+
+
+        Stmt initializer;
+        if (match(TokenType.COMMA)) {
+            initializer = null;
+        }
+        else if (match(TokenType.MUGNA)) {
+            initializer = singleVarDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        consume(TokenType.COMMA, "Expect ',' after initializer.");
+
+
+        Expr condition = null;
+        if (!check(TokenType.COMMA)) {
+            condition = expression();
+        }
+        consume(TokenType.COMMA, "Expect ',' after loop condition.");
+
+
+        Expr increment = null;
+        if (!check(TokenType.RPAREN)) {
+            increment = expression();
+        }
+
+        consume(TokenType.RPAREN, "Expect ')' after for clauses.");
+        consume(TokenType.BLOCK, "Expect 'PUNDOK' after ).");
+
+
+        Stmt body = statement();
+
+
+        if (increment != null) {
+            body = new Stmt.Block(
+                    Arrays.asList(
+                            body,
+                            new Stmt.Expression(increment)
+                    ));
+        }
+
+
+        if (condition == null) condition = new Expr.Literal(true);
+
+
+        body = new Stmt.While(condition, body);
+
+
+        List<Stmt> statements = new ArrayList<>();
+        if (initializer != null) statements.add(initializer);
+        statements.add(body);
+        body = new Stmt.Block(statements);
+
+
+        return body;
+    }
+
+
+
+
+
+
+
+
+
+
 
     private Stmt varDeclaration() {
-        // Consume the variable type (e.g., NUMERO, LETRA, TINUOD, TIPIK)
+
         consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
         Token type = previous();
         List<Stmt.Var> vars = new ArrayList<>();
@@ -150,6 +210,30 @@ public class Parser {
     }
 
 
+    private Stmt singleVarDeclaration() {
+
+        consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
+        Token type = previous();
+
+        List<Stmt.Var> vars = new ArrayList<>();
+
+
+        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        // Check if the variable has an initializer
+        Expr initializer = null;
+        if (match(TokenType.ASSIGNMENT)) {
+
+            initializer = expression();
+            vars.add(new Stmt.Var(name, initializer, type));
+        }
+
+
+        return new Stmt.VarDeclaration(vars);
+    }
+
+
+
 
 
 
@@ -170,8 +254,10 @@ public class Parser {
     }
 
     private Expr assignment() {
-//        Expr expr = equality();
+
         Expr expr = or();
+
+
         if (match(TokenType.ASSIGNMENT)) {
             Token equals = previous();
             Expr value = assignment();
@@ -181,6 +267,9 @@ public class Parser {
             }
             error(equals, "Invalid assignment target.");
         }
+
+
+
         return expr;
     }
 
@@ -295,7 +384,16 @@ public class Parser {
         if (match(TokenType.BOOL_FALSE)) return new Expr.Literal(false);
         if (match(TokenType.BOOL_TRUE)) return new Expr.Literal(true);
         if (match(TokenType.NULL)) return new Expr.Literal(null);
-        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.CHARACTER, TokenType.FLOAT)) {
+        if (match(TokenType.NUMBER)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.STRING)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.CHARACTER)) {
+            return new Expr.Literal(previous().getLiteral());
+        }
+        if (match(TokenType.FLOAT)) {
             return new Expr.Literal(previous().getLiteral());
         }
         if (match(TokenType.LPAREN)) {
@@ -304,6 +402,7 @@ public class Parser {
             return new Expr.Grouping(expr);
         }
         if (match(TokenType.IDENTIFIER)) {
+
             return new Expr.Variable(previous());
         }
         if (match(TokenType.ESCAPE_CODE)) {
@@ -311,7 +410,7 @@ public class Parser {
 
 
 
-            // If the value inside [ ] is a valid identifier, treat it as a variable.
+
             if (isIdentifier(value)) {
                 return new Expr.Variable(new Token(TokenType.IDENTIFIER, value, value, previous().getLine()));
             }
@@ -321,17 +420,19 @@ public class Parser {
                 return new Expr.Literal(value);
             }
 
-            // Otherwise, treat it as a literal string.
+
             return new Expr.Literal(previous().getLiteral());
         }
 
         if (match(TokenType.NEXT_LINE)) return new Expr.Literal('\n');
 
+
+
         throw this.error(this.peek(), "Expect expression.");
     }
 
     private boolean isIdentifier(String value) {
-        // Check if it follows identifier rules (e.g., letters, digits, underscores, but doesn't start with digit)
+
         return value.matches("[a-zA-Z_][a-zA-Z0-9_]*");
     }
 

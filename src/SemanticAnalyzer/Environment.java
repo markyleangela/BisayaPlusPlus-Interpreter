@@ -52,6 +52,7 @@ public class Environment {
     }
 
     String getType(String name) {
+
         if (types.containsKey(name)) {
             return types.get(name);
         }
@@ -62,5 +63,25 @@ public class Environment {
 
     boolean containsKey(String name) {
         return values.containsKey(name);
+    }
+
+    public void printTypes() {
+        if(types.isEmpty()) {
+            System.out.println("No types defined.");
+            return;
+        }
+        for (Map.Entry<String, String> entry : types.entrySet()) {
+            System.out.println("Variable: " + entry.getKey() + ", Type: " + entry.getValue());
+        }
+    }
+
+    public void printValues() {
+        if(values.isEmpty()) {
+            System.out.println("No values defined.");
+            return;
+        }
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
+            System.out.println("Variable: " + entry.getKey() + ", Type: " + entry.getValue().toString());
+        }
     }
 }

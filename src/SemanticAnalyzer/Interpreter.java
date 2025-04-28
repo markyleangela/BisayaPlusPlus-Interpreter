@@ -38,6 +38,17 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
+
+        if (stmt.expression instanceof Expr.Variable) {
+            Expr.Variable variableExpr = (Expr.Variable) stmt.expression;
+            String varName = variableExpr.name.getLexeme();  // Get the variable name (e.g., 'ctr')
+
+            // Check if the variable exists in the environment
+            if (!environment.containsKey(varName)) {
+                throw new RuntimeException("Undefined variable: " + varName);
+            }
+        }
+
         evaluate(stmt.expression);
         return null;
     }
@@ -51,6 +62,14 @@ public class Interpreter implements Expr.Visitor<Object>,
             if (!isTruthy(left)) return left;
         }
         return evaluate(expr.right);
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+        while(isTruthy(evaluate(stmt.condition))){
+            execute(stmt.body);
+        }
+        return null;
     }
 
     @Override
@@ -73,6 +92,47 @@ public class Interpreter implements Expr.Visitor<Object>,
 
 
 
+//    @Override
+//    public Void visitInputStmt(Stmt.Input inputStmt) {
+//        for (Token varName : inputStmt.getVariableNames()) {
+//            System.out.println("Enter value for " + varName.getLexeme() + ": ");
+//            Scanner scanner = new Scanner(System.in);
+//            String inputValue = scanner.nextLine();
+//
+//
+//            Object existing = environment.get(varName);
+//
+//
+//            try {
+//
+//                if (existing instanceof Double) {
+//                    environment.assign(varName, Double.parseDouble(inputValue));
+//                } else if (existing instanceof Boolean) {
+//                    if (inputValue.equalsIgnoreCase("\"OO\"")) {
+//                        environment.assign(varName, true);
+//                    } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+//                        environment.assign(varName, false);
+//                    } else {
+//                        throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+//                    }
+//                } else if (existing instanceof Character) {
+//                    environment.assign(varName, inputValue);
+//                } else if (existing instanceof Number) {
+//                    environment.assign(varName, Integer.parseInt(inputValue));
+//                } else if(existing == null) {
+//                    throw new RuntimeError(varName, "Undefined variable or unsupported type, cannot assign: " + varName.getLexeme());
+//                }else {
+//                    throw new RuntimeError(varName, "Unrecognized type for variable: " + varName.getLexeme());
+//                }
+//            } catch (NumberFormatException e) {
+//                // If parsing fails for numeric types, treat it as a string
+//                environment.assign(varName, inputValue);
+//                System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
+//            }
+//        }
+//        return null;
+//    }
+
     @Override
     public Void visitInputStmt(Stmt.Input inputStmt) {
         for (Token varName : inputStmt.getVariableNames()) {
@@ -80,35 +140,108 @@ public class Interpreter implements Expr.Visitor<Object>,
             Scanner scanner = new Scanner(System.in);
             String inputValue = scanner.nextLine();
 
+            // Check if the variable is already initialized in the environment
+            Object existing = environment.get(varName);
 
-            // Store the input value in the environment
-            environment.define(varName.getLexeme(), inputValue);
+            // If the variable is uninitialized (existing == null), we need to check its type
+            if (existing == null) {
+                // Get the type of the variable from the environment or declaration
+                String varType = environment.getType(varName.getLexeme()); // Assume you have a method that can return variable type
+                if (varType == null) {
+                    throw new RuntimeError(varName, "Variable type is undefined.");
+                }
 
-
-            // Optionally, display the result
-            System.out.println("Assigned value " + inputValue + " to variable " + varName.getLexeme());
+                // Initialize the variable with a value based on its type
+                if (varType.equals("NUMERO")|| varType.equals("TIPIK")) {
+                    try {
+                        // Try parsing the input value as a number (either integer or float)
+                        environment.assign(varName, Double.parseDouble(inputValue));
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeError(varName, "Expected a number, but got: " + inputValue);
+                    }
+                } else if (varType.equals("TINUOD")) {
+                    // Handle boolean values
+                    if (inputValue.equalsIgnoreCase("\"OO\"")) {
+                        environment.assign(varName, true);
+                    } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+                        environment.assign(varName, false);
+                    } else {
+                        throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+                    }
+                } else if (varType.equals("LETRA")) {
+                    // Handle character type
+                    if (inputValue.length() == 1) {
+                        environment.assign(varName, inputValue.charAt(0));
+                    } else {
+                        throw new RuntimeError(varName, "Expected a single character, but got: " + inputValue);
+                    }
+                } else {
+                    // If the type is not recognized, throw an error
+                    throw new RuntimeError(varName, "Unsupported variable type: " + varType);
+                }
+            } else {
+                // If the variable is already initialized, handle the assignment based on its existing type
+                try {
+                    if (existing instanceof Double) {
+                        environment.assign(varName, Double.parseDouble(inputValue));
+                    } else if (existing instanceof Boolean) {
+                        if (inputValue.equalsIgnoreCase("\"OO\"")) {
+                            environment.assign(varName, true);
+                        } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+                            environment.assign(varName, false);
+                        } else {
+                            throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
+                        }
+                    } else if (existing instanceof Character) {
+                        environment.assign(varName, inputValue.charAt(0));
+                    } else if (existing instanceof Number) {
+                        environment.assign(varName, Integer.parseInt(inputValue));
+                    } else {
+                        throw new RuntimeError(varName, "Unrecognized type for variable: " + varName.getLexeme());
+                    }
+                } catch (NumberFormatException e) {
+                    // If parsing fails for numeric types, treat it as a string
+                    environment.assign(varName, inputValue);
+                    System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
+                }
+            }
         }
-
         return null;
     }
-
 
 
 
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        // Evaluate the initializer expression
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
+        } else {
+            // Assign default based on declared type
+            switch (stmt.getType()) {
+                case "NUMERO":
+                    value = 0.0;  // Use 0.0 if you want doubles by default
+                    break;
+                case "TIPIK":
+                    value = 0.0f;
+                    break;
+                case "TINUOD":
+                    value = false;
+                    break;
+                case "LETRA":
+                    value = '\0';
+                    break;
+                default:
+                    throw new RuntimeError(stmt.name, "Unsupported variable type: " + stmt.getType());
+            }
         }
 
-        // Define the variable in the environment
-        environment.define(stmt.name.getLexeme(), value);
-
+        environment.define(stmt.name.getLexeme(), value, stmt.getType());
         return null;
     }
+
+
 
     @Override
     public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
@@ -124,12 +257,14 @@ public class Interpreter implements Expr.Visitor<Object>,
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
                 } else if (var.getType().equals("LETRA") && !(value instanceof Character)) {
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
-                } else if (var.getType().equals("TINUOD") && !(value instanceof Boolean)) {
+                } else if (var.getType().equals("TINUOD") && (!(value instanceof Boolean))) {
                     throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
                 }
             }
 
+
             environment.define(var.name.getLexeme(), value, var.getType());
+
         }
         return null;
     }
@@ -141,7 +276,12 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        String type = environment.getType(expr.name.getLexeme());
+
+
+
+
+
+        String type = environment.getType(expr.name.getLexeme()); //naay problema diri
 
         if (value == null) {
             environment.assign(expr.name, null);
@@ -209,12 +349,17 @@ public class Interpreter implements Expr.Visitor<Object>,
                 {
                     return (double)left + (double)right;
                 }
-//                if (left instanceof String && right instanceof String)
-//                {
-//                    return (String)left + (String)right;
-//                }
+                if (left instanceof String && right instanceof String)
+                {
+                    return (String)left + (String)right;
+                }
+
+                if (left instanceof Character && right instanceof Character)
+                {
+                    return (Character)left + (Character) right;
+                }
                 throw new RuntimeError(expr.operator,
-                        "Operands must be two numbers or two strings.");
+                        "Operands must be two numbers, two strings, or two characters.");
             case GREATER_THAN:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left > (double)right;
@@ -318,7 +463,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, new Environment(environment));
+//        executeBlock(stmt.statements, new Environment(environment));
+        executeBlock(stmt.statements, environment);
         return null;
     }
 

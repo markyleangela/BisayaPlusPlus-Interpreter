@@ -70,7 +70,11 @@ public class Lexer {
             case ':': addToken(TokenType.COLON);break;
             case '*': addToken(TokenType.MULTIPLY);break;
             case '%': addToken(TokenType.MODULO);break;
-            case '+': addToken(TokenType.PLUS);break;
+            case '+':
+                if (match('+')){
+                    addToken(TokenType.INCREMENT);
+                }
+                addToken(TokenType.PLUS);break;
             case '/': addToken(TokenType.DIVIDE);break;
             case '=': addToken(match('=')? TokenType.EQUALS : TokenType.ASSIGNMENT);break;
             case '<':
@@ -160,11 +164,10 @@ public class Lexer {
 
         String value = source.substring(start + 1, current - 1);
         if (value.equals("OO")) {
-            addToken(TokenType.BOOL_TRUE, value);
+            addToken(TokenType.BOOL_TRUE, "\"OO\"");
+            return;
         } else if(value.equals("DILI")){
-            addToken(TokenType.BOOL_FALSE, value);
-        }else {
-            addToken(TokenType.STRING, value);
+            addToken(TokenType.BOOL_FALSE, "\"DILI\"");
             return;
         }
 
@@ -257,19 +260,19 @@ public class Lexer {
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
 
-        // 🌟 Custom logic to detect multi-word keywords (e.g., KUNG WALA, KUNG DILI)
+
         if (text.equals("KUNG")) {
             skipWhitespace(); // allow spaces after KUNG
 
             int saveCurrent = current;
             int saveStart = start;
 
-            // Try to match "WALA"
+
             if (matchWord("WALA")) {
                 addToken(TokenType.ELSE); // 🔥 Treat "KUNG WALA" as ELSE
                 return;
             }
-            // Try to match "DILI"
+
             else if (matchWord("DILI")) {
                 addToken(TokenType.ELSE_IF); // 🔥 Treat "KUNG DILI" as ELSE_IF
                 return;
@@ -281,11 +284,23 @@ public class Lexer {
             type = TokenType.IF; // fallback: treat as IF
         }
 
+        if(text.equals("ALANG")){
+            skipWhitespace();
+
+            int saveCurrent = current;
+            int saveStart = start;
+
+            if (matchWord("SA")) {
+                addToken(TokenType.FOR);
+                return;
+            }
+        }
+
         if (type == null) type = TokenType.IDENTIFIER;
         addToken(type);
     }
 
-    // 🔧 Helper method to skip spaces/tabs/newlines after a word
+
     private void skipWhitespace() {
         while (!isAtEnd() && (peek() == ' ' || peek() == '\t' || peek() == '\r' || peek() == '\n')) {
             if (peek() == '\n') line++;
@@ -293,7 +308,7 @@ public class Lexer {
         }
     }
 
-    // 🔧 Helper method to match exact next word
+
     private boolean matchWord(String expected) {
         int length = expected.length();
         if (current + length > source.length()) return false;
