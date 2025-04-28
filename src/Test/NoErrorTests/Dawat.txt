@@ -1,5 +1,5 @@
 SUGOD
-    MUGNA TINUOD x,y
-    DAWAT: x, y
-    IPAKITA: x O y
+    MUGNA TINUOD x = "OO",y = "OO"
+
+    IPAKITA: x
 KATAPUSAN
