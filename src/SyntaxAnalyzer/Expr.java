@@ -136,6 +136,39 @@ public abstract class Expr {
         public final Expr right;
     }
 
+    // Inside Expr.java
+
+    public static class Increment extends Expr {
+        public final Token name;
+        public final boolean isPrefix;
+
+        public Increment(Token name, boolean isPrefix) {
+            this.name = name;
+            this.isPrefix = isPrefix;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIncrementExpr(this);
+        }
+    }
+
+    public static class Decrement extends Expr {
+        public final Token name;
+        public final boolean isPrefix;
+
+        public Decrement(Token name, boolean isPrefix) {
+            this.name = name;
+            this.isPrefix = isPrefix;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitDecrementExpr(this);
+        }
+    }
+
+
     public interface Visitor<R> {
         R visitBinaryExpr(Binary var1);
 
@@ -149,6 +182,8 @@ public abstract class Expr {
 
         R visitAssignExpr(Assign var1);
         R visitLogicalExpr(Logical expr);
+        R visitIncrementExpr(Increment expr);
+        R visitDecrementExpr(Decrement expr);
 
     }
 }

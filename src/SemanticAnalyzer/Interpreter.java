@@ -392,6 +392,38 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     @Override
+    public Object visitIncrementExpr(Expr.Increment expr) {
+        Object value = environment.get(expr.name);
+
+        if (value instanceof Double) {
+            double oldValue = (Double) value;
+            double newValue = oldValue + 1;
+            environment.assign(expr.name, newValue);
+
+            return expr.isPrefix ? newValue : oldValue;
+        }
+
+        throw new RuntimeError(expr.name, "Only numbers can be incremented.");
+    }
+
+    @Override
+    public Object visitDecrementExpr(Expr.Decrement expr) {
+        Object value = environment.get(expr.name);
+
+        if (value instanceof Double) {
+            double oldValue = (Double) value;
+            double newValue = oldValue - 1;
+            environment.assign(expr.name, newValue);
+
+            return expr.isPrefix ? newValue : oldValue;
+        }
+
+        throw new RuntimeError(expr.name, "Only numbers can be decremented.");
+    }
+
+
+
+    @Override
     public Void visitSugodStmt(Stmt.Sugod stmt) {
 
         executeBlock(stmt.statements, environment);
