@@ -1,13 +1,15 @@
 SUGOD
     MUGNA NUMERO ctr = 0
     MUGNA LETRA a = 'h'
-    ALANG SA (ctr, ctr < 10, ctr = ctr + 1)
+    ALANG SA (ctr, ctr < 10, ctr++)
     PUNDOK{
 
-        KUNG(10 < 20)
+        KUNG(ctr < 5)
         PUNDOK{
         IPAKITA: "HELLO"
+        }KUNG WALA
+        PUNDOK{
+        IPAKITA: "WORLD"
         }
     }
-    IPAKITA: x
 KATAPUSAN

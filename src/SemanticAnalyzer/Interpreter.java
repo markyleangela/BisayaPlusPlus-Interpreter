@@ -283,10 +283,12 @@ public class Interpreter implements Expr.Visitor<Object>,
 
         String type = environment.getType(expr.name.getLexeme()); //naay problema diri
 
+
         if (value == null) {
             environment.assign(expr.name, null);
             return null;
         }
+
 
         if (type.equals("NUMERO") && !(value instanceof Double)) {
             throw new RuntimeError(expr.name, "Expected a number for NUMERO variable.");
@@ -400,9 +402,8 @@ public class Interpreter implements Expr.Visitor<Object>,
             double newValue = oldValue + 1;
             environment.assign(expr.name, newValue);
 
-            return expr.isPrefix ? newValue : oldValue;
+            return newValue;
         }
-
         throw new RuntimeError(expr.name, "Only numbers can be incremented.");
     }
 

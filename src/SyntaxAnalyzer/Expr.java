@@ -140,11 +140,11 @@ public abstract class Expr {
 
     public static class Increment extends Expr {
         public final Token name;
-        public final boolean isPrefix;
 
-        public Increment(Token name, boolean isPrefix) {
+
+        public Increment(Token name) {
             this.name = name;
-            this.isPrefix = isPrefix;
+
         }
 
         @Override

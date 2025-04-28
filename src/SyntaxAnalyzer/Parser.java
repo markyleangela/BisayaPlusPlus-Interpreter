@@ -268,28 +268,6 @@ public class Parser {
             error(equals, "Invalid assignment target.");
         }
 
-
-
-        while (true) {
-            if (match(TokenType.INCREMENT)) {
-                if (expr instanceof Expr.Variable) {
-                    Token name = ((Expr.Variable) expr).name;
-                    expr = new Expr.Increment(name, false); // false = postfix
-                } else {
-                    error(previous(), "Invalid increment target.");
-                }
-            } else if (match(TokenType.DECREMENT)) {
-                if (expr instanceof Expr.Variable) {
-                    Token name = ((Expr.Variable) expr).name;
-                    expr = new Expr.Decrement(name, false); // false = postfix
-                } else {
-                    error(previous(), "Invalid decrement target.");
-                }
-            } else {
-                break;
-            }
-        }
-
         return expr;
 
 
@@ -400,15 +378,6 @@ public class Parser {
             return new Expr.Unary(operator, right);
         }
 
-        if (match(TokenType.INCREMENT)) {
-            Token name = consume(TokenType.IDENTIFIER, "Expect variable after '++'.");
-            return new Expr.Increment(name, false); // prefix
-        }
-
-        if (match(TokenType.DECREMENT)) {
-            Token name = consume(TokenType.IDENTIFIER, "Expect variable after '--'.");
-            return new Expr.Decrement(name, false); // prefix
-        }
 
         return primary();
     }
@@ -434,9 +403,21 @@ public class Parser {
             consume(TokenType.RPAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+
         if (match(TokenType.IDENTIFIER)) {
 
-            return new Expr.Variable(previous());
+            Token variable = previous();
+
+            Expr value = new Expr.Increment(variable);
+            if (match(TokenType.INCREMENT)) {
+
+                consume(TokenType.PLUS, "Expect '+' after '++'.");
+
+                return new Expr.Assign(variable, value);
+            } else if (match(TokenType.DECREMENT)) {
+                return new Expr.Decrement(variable, false);
+            }
+            return new Expr.Variable(variable);
         }
         if (match(TokenType.ESCAPE_CODE)) {
             String value = previous().getLiteral().toString();
