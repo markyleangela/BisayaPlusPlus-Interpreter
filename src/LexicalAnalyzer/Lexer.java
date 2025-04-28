@@ -32,8 +32,6 @@ public class Lexer {
 //        keywords.put("KUNG WALA",TokenType.ELSE);
 //        keywords.put("KUNG DILI",TokenType.ELSE_IF);
         keywords.put("PUNDOK",TokenType.BLOCK);
-        keywords.put("DILI",TokenType.BOOL_FALSE);
-        keywords.put("OO",TokenType.BOOL_TRUE);
 //        keywords.put("ALANG SA",TokenType.FOR);
         keywords.put("UG",TokenType.AND);
         keywords.put("O",TokenType.OR);
@@ -62,7 +60,7 @@ public class Lexer {
             case '}': addToken(TokenType.RBRACE);break;
             case ',': addToken(TokenType.COMMA);break;
 //           case '-': addToken(TokenType.MINUS);break; // this has to be handled differently because comments starts with --
-
+            case '?': addToken(TokenType.QUESTION);break;
             case '[': escapecode(); break;
 
             case '&': addToken(TokenType.CONCAT);break;

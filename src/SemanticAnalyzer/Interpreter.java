@@ -122,9 +122,9 @@ public class Interpreter implements Expr.Visitor<Object>,
                     }
                 } else if (varType.equals("TINUOD")) {
                     // Handle boolean values
-                    if (inputValue.equalsIgnoreCase("\"OO\"")) {
+                    if (inputValue.equals("\"OO\"")) {
                         environment.assign(varName, true);
-                    } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
+                    } else if (inputValue.equals("\"DILI\"")) {
                         environment.assign(varName, false);
                     } else {
                         throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
