@@ -61,7 +61,7 @@ public class Lexer {
             case '{': addToken(TokenType.LBRACE);break;
             case '}': addToken(TokenType.RBRACE);break;
             case ',': addToken(TokenType.COMMA);break;
-//            case '-': addToken(TokenType.MINUS);break; // this has to be handled differently because comments starts with --
+//           case '-': addToken(TokenType.MINUS);break; // this has to be handled differently because comments starts with --
 
             case '[': escapecode(); break;
 
@@ -192,9 +192,9 @@ public class Lexer {
             return;
         }
 
-        advance(); // Consume the closing single quote
+        advance();
 
-        // You can add a validation here for more than one character if needed
+
         if (c == '\0') {
             Lox.error(line, "Invalid character literal.");
             return;
@@ -269,12 +269,12 @@ public class Lexer {
 
 
             if (matchWord("WALA")) {
-                addToken(TokenType.ELSE); // 🔥 Treat "KUNG WALA" as ELSE
+                addToken(TokenType.ELSE); //  Treat "KUNG WALA" as ELSE
                 return;
             }
 
             else if (matchWord("DILI")) {
-                addToken(TokenType.ELSE_IF); // 🔥 Treat "KUNG DILI" as ELSE_IF
+                addToken(TokenType.ELSE_IF); //  Treat "KUNG DILI" as ELSE_IF
                 return;
             } else {
                 current = saveCurrent; // rollback if not matched
@@ -323,7 +323,7 @@ public class Lexer {
         return false;
     }
 
-    // 🔧 Check that the next character is a boundary (end or not alphanumeric)
+    // Check that the next character is a boundary (end or not alphanumeric)
     private boolean isBoundary(int index) {
         return index >= source.length() || !isAlphaNumeric(source.charAt(index));
     }
