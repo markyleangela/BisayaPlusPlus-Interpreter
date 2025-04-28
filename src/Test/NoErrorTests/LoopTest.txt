@@ -1,6 +1,11 @@
 SUGOD
-    ALANG SA (MUGNA NUMERO ctr = 0, ctr < 10, ctr = ctr + 1)
+    MUGNA NUMERO ctr = 0
+    MUGNA LETRA a = 'h'
+    ALANG SA (ctr, ctr < 10, ctr = ctr + 1)
     PUNDOK{
-        IPAKITA: ctr
+
+        MUGNA NUMERO x = 10
+        IPAKITA: a
     }
+    IPAKITA: x
 KATAPUSAN

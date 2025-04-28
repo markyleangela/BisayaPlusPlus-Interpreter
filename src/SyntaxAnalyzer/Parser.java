@@ -24,9 +24,9 @@ public class Parser {
     private Stmt declaration() {
         try {
             if (match(TokenType.MUGNA)) {
-                return varDeclaration(); // Handle variable declaration first
+                return varDeclaration();
             }
-            return statement(); // If not variable declaration, treat as a statement
+            return statement();
         } catch (ParseError error) {
             synchronize();
             return null;
@@ -54,13 +54,13 @@ public class Parser {
     private Stmt inputStatement() {
         List<Token> variableNames = new ArrayList<>();
 
-        // Consume the list of variables separated by commas
+
         do {
             Token variableName = consume(TokenType.IDENTIFIER, "Expect variable name.");
             variableNames.add(variableName);
-        } while (match(TokenType.COMMA));  // Allow multiple variables
+        } while (match(TokenType.COMMA));
 
-        return new Stmt.Input(variableNames);  // Return the input statement with the list of variable names
+        return new Stmt.Input(variableNames);
     }
 
 
@@ -123,53 +123,53 @@ public class Parser {
         else if (match(TokenType.MUGNA)) {
             initializer = singleVarDeclaration();
         } else {
-            initializer = expressionStatement();  // Handle other expression statement
+            initializer = expressionStatement();
         }
 
         consume(TokenType.COMMA, "Expect ',' after initializer.");
 
-        // Parse the loop condition (e.g., ctr <= 10)
+
         Expr condition = null;
-        if (!check(TokenType.COMMA)) {  // Check if condition exists
-            condition = expression();  // Parse loop condition expression
+        if (!check(TokenType.COMMA)) {
+            condition = expression();
         }
         consume(TokenType.COMMA, "Expect ',' after loop condition.");
 
-        // Parse the update expression (e.g., ctr = ctr + 1)
+
         Expr increment = null;
-        if (!check(TokenType.RPAREN)) {  // If the right parenthesis is not next, parse increment
+        if (!check(TokenType.RPAREN)) {
             increment = expression();
         }
 
         consume(TokenType.RPAREN, "Expect ')' after for clauses.");
-        consume(TokenType.BLOCK, "Expect 'PUNDOK' after ).");  // "PUNDOK" for block in Bisaya++
+        consume(TokenType.BLOCK, "Expect 'PUNDOK' after ).");
 
-        // Handle the block (body of the loop)
+
         Stmt body = statement();
 
-        // If increment exists, add it to the body of the loop
+
         if (increment != null) {
             body = new Stmt.Block(
                     Arrays.asList(
                             body,
-                            new Stmt.Expression(increment) // Add increment expression after body
+                            new Stmt.Expression(increment)
                     ));
         }
 
-        // If no condition is specified, assume the loop will always run (infinite loop)
+
         if (condition == null) condition = new Expr.Literal(true);
 
-        // The body of the loop is wrapped in a while loop based on the condition
+
         body = new Stmt.While(condition, body);
 
-        // If there was an initializer, include it at the start of the loop
+
         List<Stmt> statements = new ArrayList<>();
         if (initializer != null) statements.add(initializer);
         statements.add(body);
         body = new Stmt.Block(statements);
 
 
-        return body;  // Return the complete for-loop statement
+        return body;
     }
 
 
@@ -183,7 +183,7 @@ public class Parser {
 
 
     private Stmt varDeclaration() {
-        // Consume the variable type (e.g., NUMERO, LETRA, TINUOD, TIPIK)
+
         consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
         Token type = previous();
         List<Stmt.Var> vars = new ArrayList<>();
@@ -211,13 +211,13 @@ public class Parser {
 
 
     private Stmt singleVarDeclaration() {
-        // Consume the variable type (e.g., NUMERO, LETRA, TINUOD, TIPIK)
+
         consume(TokenType.NUMERO, TokenType.LETRA, TokenType.TINUOD, TokenType.TIPIK);
         Token type = previous();
 
         List<Stmt.Var> vars = new ArrayList<>();
 
-        // Only handle a single variable declaration
+
         Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
         // Check if the variable has an initializer
@@ -229,7 +229,6 @@ public class Parser {
         }
 
 
-        // Create and return the variable declaration statement
         return new Stmt.VarDeclaration(vars);
     }
 
@@ -255,7 +254,7 @@ public class Parser {
     }
 
     private Expr assignment() {
-//        Expr expr = equality();
+
         Expr expr = or();
 
 
@@ -411,7 +410,7 @@ public class Parser {
 
 
 
-            // If the value inside [ ] is a valid identifier, treat it as a variable.
+
             if (isIdentifier(value)) {
                 return new Expr.Variable(new Token(TokenType.IDENTIFIER, value, value, previous().getLine()));
             }
@@ -421,7 +420,7 @@ public class Parser {
                 return new Expr.Literal(value);
             }
 
-            // Otherwise, treat it as a literal string.
+
             return new Expr.Literal(previous().getLiteral());
         }
 
@@ -433,7 +432,7 @@ public class Parser {
     }
 
     private boolean isIdentifier(String value) {
-        // Check if it follows identifier rules (e.g., letters, digits, underscores, but doesn't start with digit)
+
         return value.matches("[a-zA-Z_][a-zA-Z0-9_]*");
     }
 
