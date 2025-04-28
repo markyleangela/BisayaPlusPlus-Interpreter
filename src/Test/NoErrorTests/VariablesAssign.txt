@@ -1,7 +1,4 @@
 SUGOD
-    MUGNA NUMERO x = 2,y, z
-    x = x + 10
-    y = 20
-    y = z = 50
-    IPAKITA: x & y
+    MUGNA TINUOD x = "OO"
+    IPAKITA: x
 KATAPUSAN

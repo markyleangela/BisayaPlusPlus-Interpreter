@@ -270,7 +270,29 @@ public class Parser {
 
 
 
+        while (true) {
+            if (match(TokenType.INCREMENT)) {
+                if (expr instanceof Expr.Variable) {
+                    Token name = ((Expr.Variable) expr).name;
+                    expr = new Expr.Increment(name, false); // false = postfix
+                } else {
+                    error(previous(), "Invalid increment target.");
+                }
+            } else if (match(TokenType.DECREMENT)) {
+                if (expr instanceof Expr.Variable) {
+                    Token name = ((Expr.Variable) expr).name;
+                    expr = new Expr.Decrement(name, false); // false = postfix
+                } else {
+                    error(previous(), "Invalid decrement target.");
+                }
+            } else {
+                break;
+            }
+        }
+
         return expr;
+
+
     }
 
     public List<Stmt> parse(){
@@ -377,6 +399,17 @@ public class Parser {
             Expr right = unary();
             return new Expr.Unary(operator, right);
         }
+
+        if (match(TokenType.INCREMENT)) {
+            Token name = consume(TokenType.IDENTIFIER, "Expect variable after '++'.");
+            return new Expr.Increment(name, false); // prefix
+        }
+
+        if (match(TokenType.DECREMENT)) {
+            Token name = consume(TokenType.IDENTIFIER, "Expect variable after '--'.");
+            return new Expr.Decrement(name, false); // prefix
+        }
+
         return primary();
     }
 

@@ -4,8 +4,10 @@ SUGOD
     ALANG SA (ctr, ctr < 10, ctr = ctr + 1)
     PUNDOK{
 
-        MUGNA NUMERO x = 10
-        IPAKITA: a
+        KUNG(10 < 20)
+        PUNDOK{
+        IPAKITA: "HELLO"
+        }
     }
     IPAKITA: x
 KATAPUSAN
