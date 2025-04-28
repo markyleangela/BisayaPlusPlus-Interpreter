@@ -155,11 +155,11 @@ public abstract class Expr {
 
     public static class Decrement extends Expr {
         public final Token name;
-        public final boolean isPrefix;
 
-        public Decrement(Token name, boolean isPrefix) {
+
+        public Decrement(Token name) {
             this.name = name;
-            this.isPrefix = isPrefix;
+
         }
 
         @Override

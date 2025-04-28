@@ -408,15 +408,18 @@ public class Parser {
 
             Token variable = previous();
 
-            Expr value = new Expr.Increment(variable);
-            if (match(TokenType.INCREMENT)) {
 
+            if (match(TokenType.INCREMENT)) {
+                Expr value = new Expr.Increment(variable);
                 consume(TokenType.PLUS, "Expect '+' after '++'.");
 
                 return new Expr.Assign(variable, value);
-            } else if (match(TokenType.DECREMENT)) {
-                return new Expr.Decrement(variable, false);
             }
+//            } else if (match(TokenType.DECREMENT)) {
+//                Expr value = new Expr.Decrement(variable);
+//                consume(TokenType.MINUS, "Expect '-' after '--'.");
+//                return new Expr.Assign(variable, value);
+//            }
             return new Expr.Variable(variable);
         }
         if (match(TokenType.ESCAPE_CODE)) {
