@@ -1,0 +1,5 @@
+SUGOD
+MUGNA NUMERO a = 5
+a = "hello"
+IPAKITA: a
+KATAPUSAN

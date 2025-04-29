@@ -1,0 +1,12 @@
+SUGOD
+MUGNA NUMERO a = 5, b = 10
+MUGNA TINUOD t
+KUNG (a < b UG b == 10)
+PUNDOK {
+    t = "OO"
+} KUNG WALA
+PUNDOK {
+    t = "DILI"
+}
+IPAKITA: t
+KATAPUSAN
