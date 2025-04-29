@@ -1,0 +1,5 @@
+SUGOD
+MUGNA TINUOD flag
+flag = 10
+IPAKITA: flag
+KATAPUSAN

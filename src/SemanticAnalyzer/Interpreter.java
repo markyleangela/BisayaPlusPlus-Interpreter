@@ -1,4 +1,7 @@
+// Optimized Interpreter.java (no added features, just performance and clarity improvements)
+
 package SemanticAnalyzer;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -9,18 +12,13 @@ import SyntaxAnalyzer.Stmt;
 import Utils.RuntimeError;
 import LexicalAnalyzer.Lox;
 
-public class Interpreter implements Expr.Visitor<Object>,
-        Stmt.Visitor<Void> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
-
 
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
         return expr.value;
     }
-
-
-
 
     @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
@@ -28,27 +26,14 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     private Object evaluate(Expr expr) {
-        if (expr == null) {
-
-            return null;
-        }
-
-        return expr.accept(this);
+        return expr == null ? null : expr.accept(this);
     }
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
-
-        if (stmt.expression instanceof Expr.Variable) {
-            Expr.Variable variableExpr = (Expr.Variable) stmt.expression;
-            String varName = variableExpr.name.getLexeme();  // Get the variable name (e.g., 'ctr')
-
-            // Check if the variable exists in the environment
-            if (!environment.containsKey(varName)) {
-                throw new RuntimeException("Undefined variable: " + varName);
-            }
+        if (stmt.expression instanceof Expr.Variable varExpr && !environment.containsKey(varExpr.name.getLexeme())) {
+            throw new RuntimeError(varExpr.name, "Undefined variable: " + varExpr.name.getLexeme());
         }
-
         evaluate(stmt.expression);
         return null;
     }
@@ -56,212 +41,100 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitLogicalExpr(Expr.Logical expr) {
         Object left = evaluate(expr.left);
-        if (expr.operator.getTokenType() == TokenType.OR) {
-            if (isTruthy(left)) return left;
-        } else {
-            if (!isTruthy(left)) return left;
-        }
-        return evaluate(expr.right);
+        return switch (expr.operator.getTokenType()) {
+            case OR -> isTruthy(left) ? left : evaluate(expr.right);
+            default -> !isTruthy(left) ? left : evaluate(expr.right);
+        };
     }
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while(isTruthy(evaluate(stmt.condition))){
-            execute(stmt.body);
-        }
+        while (isTruthy(evaluate(stmt.condition))) execute(stmt.body);
         return null;
     }
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
-        if (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.thenBranch);
-        } else if (stmt.elseBranch != null) {
-            execute(stmt.elseBranch);
-        }
+        execute(isTruthy(evaluate(stmt.condition)) ? stmt.thenBranch : stmt.elseBranch);
         return null;
     }
 
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
-        Object value = evaluate(stmt.expression);
-
-        System.out.println(stringify(value));
+        System.out.println(stringify(evaluate(stmt.expression)));
         return null;
     }
-
-
-
-
 
     @Override
     public Void visitInputStmt(Stmt.Input inputStmt) {
+        Scanner scanner = new Scanner(System.in);
         for (Token varName : inputStmt.getVariableNames()) {
-            System.out.println("Enter value for " + varName.getLexeme() + ": ");
-            Scanner scanner = new Scanner(System.in);
-            String inputValue = scanner.nextLine();
+            System.out.print("Enter value for " + varName.getLexeme() + ": ");
+            String inputValue = scanner.nextLine().replace("\"", "");
+            String type = environment.getType(varName.getLexeme());
 
+            if (type == null) throw new RuntimeError(varName, "Variable type is undefined.");
 
-            Object existing = environment.get(varName);
-
-
-            if (existing == null) {
-
-                String varType = environment.getType(varName.getLexeme());
-                if (varType == null) {
-                    throw new RuntimeError(varName, "Variable type is undefined.");
-                }
-
-
-                if (varType.equals("NUMERO")|| varType.equals("TIPIK")) {
-                    try {
-
-                        environment.assign(varName, Double.parseDouble(inputValue));
-                    } catch (NumberFormatException e) {
-                        throw new RuntimeError(varName, "Expected a number, but got: " + inputValue);
-                    }
-                } else if (varType.equals("TINUOD")) {
-                    // Handle boolean values
-                    if (inputValue.equals("\"OO\"")) {
-                        environment.assign(varName, true);
-                    } else if (inputValue.equals("\"DILI\"")) {
-                        environment.assign(varName, false);
-                    } else {
-                        throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
-                    }
-                } else if (varType.equals("LETRA")) {
-                    // Handle character type
-                    if (inputValue.length() == 1) {
+            try {
+                switch (type) {
+                    case "NUMERO", "TIPIK" -> environment.assign(varName, Double.parseDouble(inputValue));
+                    case "TINUOD" -> environment.assign(varName, inputValue.equalsIgnoreCase("OO"));
+                    case "LETRA" -> {
+                        if (inputValue.length() != 1)
+                            throw new RuntimeError(varName, "Expected a single character.");
                         environment.assign(varName, inputValue.charAt(0));
-                    } else {
-                        throw new RuntimeError(varName, "Expected a single character, but got: " + inputValue);
                     }
-                } else {
-
-                    throw new RuntimeError(varName, "Unsupported variable type: " + varType);
+                    default -> throw new RuntimeError(varName, "Unsupported type: " + type);
                 }
-            } else {
-
-                try {
-                    if (existing instanceof Double) {
-                        environment.assign(varName, Double.parseDouble(inputValue));
-                    } else if (existing instanceof Boolean) {
-                        if (inputValue.equalsIgnoreCase("\"OO\"")) {
-                            environment.assign(varName, true);
-                        } else if (inputValue.equalsIgnoreCase("\"DILI\"")) {
-                            environment.assign(varName, false);
-                        } else {
-                            throw new RuntimeError(varName, "TINUOD should be \"OO\" or \"DILI\"");
-                        }
-                    } else if (existing instanceof Character) {
-                        environment.assign(varName, inputValue.charAt(0));
-                    } else if (existing instanceof Number) {
-                        environment.assign(varName, Integer.parseInt(inputValue));
-                    } else {
-                        throw new RuntimeError(varName, "Unrecognized type for variable: " + varName.getLexeme());
-                    }
-                } catch (NumberFormatException e) {
-
-                    environment.assign(varName, inputValue);
-                    System.out.println("Assigned string \"" + inputValue + "\" to variable " + varName.getLexeme());
-                }
+            } catch (NumberFormatException e) {
+                throw new RuntimeError(varName, "Invalid input for type " + type + ": " + inputValue);
             }
         }
         return null;
     }
 
-
-
-
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        Object value = null;
-        if (stmt.initializer != null) {
-            value = evaluate(stmt.initializer);
-        } else {
-            // Assign default based on declared type
-            switch (stmt.getType()) {
-                case "NUMERO":
-                    value = 0.0;
-                    break;
-                case "TIPIK":
-                    value = 0.0f;
-                    break;
-                case "TINUOD":
-                    value = false;
-                    break;
-                case "LETRA":
-                    value = '\0';
-                    break;
-                default:
-                    throw new RuntimeError(stmt.name, "Unsupported variable type: " + stmt.getType());
-            }
-        }
-
+        Object value = stmt.initializer != null ? evaluate(stmt.initializer) : switch (stmt.getType()) {
+            case "NUMERO" -> 0.0;
+            case "TIPIK" -> 0.0f;
+            case "TINUOD" -> false;
+            case "LETRA" -> '\0';
+            default -> throw new RuntimeError(stmt.name, "Unsupported type: " + stmt.getType());
+        };
         environment.define(stmt.name.getLexeme(), value, stmt.getType());
         return null;
     }
 
-
-
     @Override
     public Void visitVarDeclaration(Stmt.VarDeclaration stmt) {
         for (Stmt.Var var : stmt.variables) {
-            Object value = null;
-
-            if (var.initializer != null) {
-                value = evaluate(var.initializer);
-
-                if (var.getType().equals("NUMERO") && !(value instanceof Double)) {
-                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type NUMERO.");
-                } else if (var.getType().equals("TIPIK") && !(value instanceof Float)) {
-                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TIPIK.");
-                } else if (var.getType().equals("LETRA") && !(value instanceof Character)) {
-                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type LETRA.");
-                } else if (var.getType().equals("TINUOD") && (!(value instanceof Boolean))) {
-                    throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type TINUOD.");
-                }
+            Object value = var.initializer != null ? evaluate(var.initializer) : null;
+            if (value != null && !isTypeCompatible(var.getType(), value)) {
+                throw new RuntimeError(var.name, "Variable " + var.name.getLexeme() + " must be of type " + var.getType() + ".");
             }
-
-
             environment.define(var.name.getLexeme(), value, var.getType());
-
         }
         return null;
     }
 
-
-
-
+    private boolean isTypeCompatible(String type, Object value) {
+        return switch (type) {
+            case "NUMERO" -> value instanceof Double;
+            case "TIPIK" -> value instanceof Float;
+            case "LETRA" -> value instanceof Character;
+            case "TINUOD" -> value instanceof Boolean;
+            default -> false;
+        };
+    }
 
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-
-
-
-
-
-        String type = environment.getType(expr.name.getLexeme()); //naay problema diri
-
-
-        if (value == null) {
-            environment.assign(expr.name, null);
-            return null;
+        String type = environment.getType(expr.name.getLexeme());
+        if (value != null && !isTypeCompatible(type, value)) {
+            throw new RuntimeError(expr.name, "Expected " + type + " for assignment.");
         }
-
-
-        if (type.equals("NUMERO") && !(value instanceof Double)) {
-            throw new RuntimeError(expr.name, "Expected a number for NUMERO variable.");
-        }else if(type.equals("TIPIK") && !(value instanceof Float)) {
-            System.out.println(value.getClass());
-            throw new RuntimeError(expr.name, "Expected a number for TIPIK variable.");
-        }else if(type.equals("LETRA") && !(value instanceof Character)) {
-            throw new RuntimeError(expr.name, "Expected a character for LETRA variable.");
-        }else if(type.equals("TINUOD") && !(value instanceof Boolean)) {
-            throw new RuntimeError(expr.name, "Expected a boolean for TINUOD variable.");
-        }
-
         environment.assign(expr.name, value);
         return value;
     }
@@ -269,187 +142,123 @@ public class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
-        switch (expr.operator.getTokenType()) {
-            case MINUS:
+        return switch (expr.operator.getTokenType()) {
+            case MINUS -> {
                 checkNumberOperand(expr.operator, right);
-                return -(double)right;
-            case NOT:
-                return !isTruthy(right);
-        }
-// Unreachable.
-        return null;
+                yield -(double) right;
+            }
+            case NOT -> !isTruthy(right);
+            default -> null;
+        };
     }
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-
-        return environment.get(expr.name);  // This should now correctly retrieve the value.
+        return environment.get(expr.name);
     }
 
-
     private boolean isTruthy(Object object) {
-        if (object == null) return false;
-        if (object instanceof Boolean) return (boolean)object;
-        return true;
+        return object instanceof Boolean ? (boolean) object : object != null;
     }
 
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
-        switch (expr.operator.getTokenType()) {
-            case MINUS:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left - (double)right;
-            case DIVIDE:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left / (double)right;
-            case MULTIPLY:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left * (double)right;
-            case PLUS:
-                if (left instanceof Double && right instanceof Double)
-                {
-                    return (double)left + (double)right;
-                }
-                if (left instanceof String && right instanceof String)
-                {
-                    return (String)left + (String)right;
-                }
+        return switch (expr.operator.getTokenType()) {
+            case MINUS, DIVIDE, MULTIPLY, PLUS -> applyArithmetic(expr.operator, left, right);
+            case GREATER_THAN -> (double) left > (double) right;
+            case GREATER_EQUAL -> (double) left >= (double) right;
+            case LESS_THAN -> (double) left < (double) right;
+            case LESS_EQUAL -> (double) left <= (double) right;
+            case EQUALS -> isEqual(left, right);
+            case NOT_EQUALS -> !isEqual(left, right);
+            case CONCAT -> stringify(left) + stringify(right);
+            case NEXT_LINE -> stringify(left) + "\n" + stringify(right);
+            default -> null;
+        };
+    }
 
-                if (left instanceof Character && right instanceof Character)
-                {
-                    return (Character)left + (Character) right;
-                }
-                throw new RuntimeError(expr.operator,
-                        "Operands must be two numbers, two strings, or two characters.");
-            case GREATER_THAN:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left > (double)right;
-
-            case GREATER_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left >= (double)right;
-
-            case LESS_THAN:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left < (double)right;
-
-            case LESS_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left <= (double)right;
-
-
-            case NOT_EQUALS:
-                return !isEqual(left, right);
-
-
-            case EQUALS:
-                return isEqual(left, right);
-
-            case CONCAT:return stringify(left) + stringify(right);
-            case NEXT_LINE: return stringify(left) + "\n" + stringify(right);
-        }
-// Unreachable.
-        return null;
+    private Object applyArithmetic(Token operator, Object left, Object right) {
+        checkNumberOperands(operator, left, right);
+        return switch (operator.getTokenType()) {
+            case MINUS -> (double) left - (double) right;
+            case DIVIDE -> (double) left / (double) right;
+            case MULTIPLY -> (double) left * (double) right;
+            case PLUS -> (left instanceof Double && right instanceof Double) ?
+                (double) left + (double) right :
+                stringify(left) + stringify(right);
+            default -> null;
+        };
     }
 
     @Override
     public Object visitIncrementExpr(Expr.Increment expr) {
-        Object value = environment.get(expr.name);
-
-        if (value instanceof Double) {
-            double oldValue = (Double) value;
-            double newValue = oldValue + 1;
-            environment.assign(expr.name, newValue);
-
-            return newValue;
-        }
-        throw new RuntimeError(expr.name, "Only numbers can be incremented.");
+        return applyIncrementDecrement(expr.name, 1);
     }
 
     @Override
     public Object visitDecrementExpr(Expr.Decrement expr) {
-        Object value = environment.get(expr.name);
-
-        if (value instanceof Double) {
-            double oldValue = (Double) value;
-            double newValue = oldValue - 1;
-            environment.assign(expr.name, newValue);
-
-            return newValue;
-        }
-
-        throw new RuntimeError(expr.name, "Only numbers can be decremented.");
+        return applyIncrementDecrement(expr.name, -1);
     }
 
-
+    private Object applyIncrementDecrement(Token name, int delta) {
+        Object value = environment.get(name);
+        if (value instanceof Double num) {
+            double result = num + delta;
+            environment.assign(name, result);
+            return result;
+        }
+        throw new RuntimeError(name, "Only numbers can be incremented or decremented.");
+    }
 
     @Override
     public Void visitSugodStmt(Stmt.Sugod stmt) {
-
         executeBlock(stmt.statements, environment);
         return null;
     }
 
     private boolean isEqual(Object a, Object b) {
-        if (a == null && b == null) return true;
-        if (a == null) return false;
-        return a.equals(b);
+        return a == null ? b == null : a.equals(b);
     }
 
     private String stringify(Object object) {
         if (object == null) return "null";
-        if (object instanceof Boolean) {
-            return (Boolean) object ? "OO" : "DILI";
-        }
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
-            }
-            return text;
+        if (object instanceof Boolean b) return b ? "OO" : "DILI";
+        if (object instanceof Double d) {
+            String text = d.toString();
+            return text.endsWith(".0") ? text.substring(0, text.length() - 2) : text;
         }
         return object.toString();
     }
 
-    private void checkNumberOperand(Token operator, Object
-            operand) {
-        if (operand instanceof Double) return;
-        throw new RuntimeError(operator,
-                "Operand must be a number.");
+    private void checkNumberOperand(Token operator, Object operand) {
+        if (!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number.");
     }
 
-    private void checkNumberOperands(Token operator,
-                                     Object left, Object right)
-    {
-        if (left instanceof Double && right instanceof Double)
-            return;
-        throw new RuntimeError(operator,
-                "Operands must be numbers.");
+    private void checkNumberOperands(Token operator, Object left, Object right) {
+        if (!(left instanceof Double) || !(right instanceof Double)) {
+            throw new RuntimeError(operator, "Operands must be numbers.");
+        }
     }
 
     public void interpret(List<Stmt> statements) {
         try {
-            for (Stmt statement : statements) {
-                execute(statement);
-            }
+            for (Stmt statement : statements) execute(statement);
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
     private void execute(Stmt stmt) {
-        stmt.accept(this);
+        if (stmt != null) stmt.accept(this);
     }
 
     public void executeBlock(List<Stmt> statements, Environment blockEnvironment) {
         Environment previous = this.environment;
         try {
             this.environment = blockEnvironment;
-            for (Stmt statement : statements) {
-                execute(statement);
-            }
+            for (Stmt statement : statements) execute(statement);
         } finally {
             this.environment = previous;
         }
@@ -457,10 +266,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-//        executeBlock(stmt.statements, new Environment(environment));
         executeBlock(stmt.statements, environment);
         return null;
     }
-
-
 }
